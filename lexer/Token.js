@@ -1,7 +1,7 @@
 module.exports = Token;
 
-function Token(name, value, lineno, colno) {
-  this.name   = name   || null;
+function Token(type, value, lineno, colno) {
+  this.type   = type   || null;
   this.value  = value  || null;
   this.lineno = lineno || null;
   this.colno  = colno  || null;

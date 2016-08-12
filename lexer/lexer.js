@@ -1,6 +1,8 @@
+var Token = require('./Token');
+var ErrorHandler = require('../util/ErrorHandler');
+
 module.exports = lex;
 module.exports.Lexer = Lexer;
-var Token = require('./Token');
 
 
 function lex(str, options) {
@@ -41,8 +43,9 @@ Lexer.prototype = {
     var token;
 
     token = this.getToken()
-    while (token.name !== 'EOF') {
-      result.push(token);
+    while (token.type !== 'EOF') {
+      if (token.type !== 'lineComment' && token.type !== 'blockComment')
+        result.push(token);
       token = this.getToken();
     }
     result.push(token); // EOF
@@ -51,7 +54,7 @@ Lexer.prototype = {
 
   /**
    * Token
-   * @return {name:String, value:String, lineno:number, colno:number}
+   * @return {type:String, value:String, lineno:number, colno:number}
    */
   
   getToken: function() {
@@ -79,14 +82,16 @@ Lexer.prototype = {
 
     if (longest > 0) {
       this.incCursor(mm[0].length)
-      if (token.name === "lineComment") this.incLineNo();
+      if (token.type === "lineComment") this.incLineNo();
       else this.incColNo(mm[0].length);
       return token;
     } else {
-      throw new Error("token error!\nfile: " + this.options.fileName +
-                      ", line:" + this.lineno + ", cloumn: " + this.colno + "\n" +
-                      this.input.slice(this.cursor, this.cursor+10) + "..." + '\n'+
-                      "^^^^^^^^^^" + '\n');      
+      ErrorHandler.error("token error",
+                         this.options.fileName,
+                         this.lineno,
+                         this.colno,
+                         this.input.slice(this.cursor, this.cursor+10) + 
+                         "..." + '\n'+ "^^^^^^^^^^" + '\n');
     }
   },
 
@@ -199,7 +204,7 @@ Lexer.prototype = {
 
   /**
    * Token
-   * @return {name:String, value:String, lineno:number, colno:number}
+   * @return {type:String, value:String, lineno:number, colno:number}
    */
 
   blockString: function() {
@@ -226,7 +231,7 @@ Lexer.prototype = {
 
   /**
    * Token
-   * @return {name:String, value:String, lineno:number, colno:number}
+   * @return {type:String, value:String, lineno:number, colno:number}
    */
 
   blockComment: function() {

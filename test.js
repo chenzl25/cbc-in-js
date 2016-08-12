@@ -4,11 +4,11 @@ var parse = require("./parser/Parser");
 var files = fs.readdirSync('./test');
 
 files.forEach(function(fileName) {
-  // if (fileName !== "hello.cb") return;
+  if (fileName !== "hello.cb") return;
   if (fileName.slice(-3) === '.cb') {
     var str = fs.readFileSync("./test/" + fileName, "utf8");
     try {
-      // var arr = lex(str);
+      // var arr = lex(str, {fileName: fileName});console.log(arr);
       var ast = parse(str, {fileName: fileName});
       console.log(ast);
       console.log("pass: " + fileName);
