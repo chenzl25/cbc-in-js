@@ -1,24 +1,24 @@
 module.exports = lex;
 module.exports.Lexer = Lexer;
+var Token = require('./Token');
 
-function Token(name, value, lineno, colno) {
-  this.name   = name   || null;
-  this.value  = value  || null;
-  this.lineno = lineno || null;
-  this.colno  = colno  || null;
-}
 
 function lex(str, options) {
   var lexer = new Lexer(str, options);
   return lexer.getTokens();
 }
 
-function Lexer(str) {
+function Lexer(str, options) {
+  options = options || {};
   if (typeof str !== 'string') {
     throw new Error('Expected source code to be a string but got "' + (typeof str) + '"')
   }
+  if (typeof options !== 'object') {
+    throw new Error('Expected "options" to be an object but got "' + (typeof options) + '"');
+  }
 
   this.input = str.replace(/\r\n|\r/g, '\n') + '\n';
+  this.options = options;
   this.lineno = 1;
   this.colno = 1;
   this.cursor = 0;
@@ -83,8 +83,8 @@ Lexer.prototype = {
       else this.incColNo(mm[0].length);
       return token;
     } else {
-      throw new Error("token error!\nline:" + this.lineno + 
-                      ", cloumn: " + this.colno + "\n" +
+      throw new Error("token error!\nfile: " + this.options.fileName +
+                      ", line:" + this.lineno + ", cloumn: " + this.colno + "\n" +
                       this.input.slice(this.cursor, this.cursor+10) + "..." + '\n'+
                       "^^^^^^^^^^" + '\n');      
     }
