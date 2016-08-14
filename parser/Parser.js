@@ -5,17 +5,14 @@ var ErrorHandler = require('../util/ErrorHandler');
 module.exports = parse;
 module.exports.Parser = Parser;
 
-
-
-
-function parse(str, options) {
-  var parser = new Parser(str, options);
+function parse(str, loader, options) {
+  var parser = new Parser(str, loader, options);
   var ast = parser.parse();
   return ast
 }
 
-function Parser(str, options) {
-  options = options || {};
+function Parser(str, loader ,options) {
+  var options = options || {};
   if (typeof str !== 'string') {
     throw new Error('Expected source code to be a string but got "' + (typeof str) + '"')
   }
@@ -24,6 +21,7 @@ function Parser(str, options) {
   }
 
   this.ts = new tokenStream(lex(str, options), options); // tokenStream
+  this.loader = loader;
   this.options = options;
   this.ast = null;
   this.knownTypedefs = new Set();
@@ -57,11 +55,97 @@ Parser.prototype = {
     this.ts.accept("EOF", "EOF");
   },
 
+  declarationFile: function() {
+    var impdecls, decls, funcdecl, vardecl, defconst,
+        defstruct, defunion, typedef;
+    var handle;
+    impdecls = this.importStmts();
+    // decls.add(impdecls);
+    while (this.peek().type !== 'EOF') {
+      handle = this.getHandle();
+      if (this.tryKeyWord('extern') && this.typerefLookahead() &&
+          this.tryIdentifier() && this.trySymbol('(')) {
+        this.restore(handle);
+        funcdecl = this.funcdecl();
+        // TODO
+        continue;
+      }
+      this.restore(handle);
+      if (this.tryKeyWord('extern') && this.typerefLookahead() &&
+          this.tryIdentifier()) {
+        this.restore(handle);
+        vardecl = this.vardecl();
+        // TODO
+        continue;
+      }
+      
+      this.restore(handle);
+      switch(this.peek().value) {
+        case 'const':
+          defconst = this.defconst();
+          // TODO
+          break;
+        case 'struct':
+          defstruct =  this.defstruct();
+          // TODO
+          break;
+        case 'union':
+          defunion = this.defunion();
+          // TODO
+          break;
+        case 'typedef':
+          typedef = this.typedef();
+          // TODO
+          break;
+        default:
+          this.error('fail to parse declarationFile');
+      }
+    }
+    this.EOF();
+    return this.knownTypedefs; // TO DELETE
+    // return decls;
+    // TODO
+  }, // end of declarationFile
+
+  funcdecl: function() {
+    var ret, n, ps;
+    this.acceptKeyWord('extern');
+    ret = this.typeref();
+    n = this.name();
+    this.acceptSymbol('(');
+    ps = this.params();
+    this.acceptSymbol(')');
+    this.acceptSymbol(';');
+    // TODO
+  },
+
+  vardecl: function() {
+    var ret, n;
+
+    this.acceptKeyWord('extern');
+    ret = this.typeref();
+    n = this.name();
+    this.acceptSymbol(';');
+    // TODO
+  },
+
   importStmts: function() {
-    var libid, impdecls;
+    var libid, decls, impdecls;
 
     while(this.peek().value === 'import') {
       libid = this.importStmt();
+      if (this.loader) {
+        // decls = this.loader.loadLibrary(libid);
+        // TODO
+        var kt = this.loader.loadLibrary(libid, this.options.fullPath);
+        var self = this;
+        kt.forEach(function(name) {
+          self.addType(name); // TO DELETE
+        })
+      } else {
+        this.warn("without loader");
+      }
+      // impdecls.add(decls)
       //TODO
     }
     return impdecls;
@@ -76,10 +160,9 @@ Parser.prototype = {
       this.acceptSymbol('.');
       str += '.';
       str += this.name();
-      // TODO maybe;
     }
     this.acceptSymbol(';');
-    // TODO
+    return str;
   },
 
   topDefs: function() {
@@ -147,6 +230,8 @@ Parser.prototype = {
     } else {
       params = this.fixedparams();
       if (this.peek().value === ',' && this.peek(1).value === '...') {
+        this.acceptSymbol(',');
+        this.acceptSymbol('...');
         //TODO
       }
     }
@@ -185,9 +270,18 @@ Parser.prototype = {
 
   stmts: function() {
     var ss, s;
+    var handle;
 
-    while(s = this.stmt()) {
+    handle = this.getHandle();
+    while(this.stmtLookahead()) {
+      this.restore(handle);
+      s = this.stmt();
+      // if stmt is ';' then s is null
+      if (s === null) {
+
+      }
       // TODO;
+      handle = this.getHandle();
     }
     return ss;
   },
@@ -215,6 +309,7 @@ Parser.prototype = {
     this.restore(handle);
     switch(this.peek().value) {
       case ';':
+        this.acceptSymbol(';');
         break;
       case '{':
         s = this.block();
@@ -251,6 +346,36 @@ Parser.prototype = {
     }
     return s;
   }, // end of stmt
+
+  stmtLookahead: function() {
+    var handle = this.getHandle();
+    if (this.tryIdentifier() && this.trySymbol(':')) {
+      return true;
+    }
+
+    this.restore(handle);
+    if (this.exprLookahead() && this.trySymbol(';')) {
+      return true;
+    }
+
+    this.restore(handle);
+
+    if (this.trySymbol(';') ||
+        this.trySymbol('{') ||
+        this.tryKeyWord('if') ||
+        this.tryKeyWord('while') ||
+        this.tryKeyWord('do') ||
+        this.tryKeyWord('for') ||
+        this.tryKeyWord('switch') ||
+        this.tryKeyWord('break') ||
+        this.tryKeyWord('continue') ||
+        this.tryKeyWord('goto') ||
+        this.tryKeyWord('return')) {
+      return true;
+    } else {
+      return false;
+    }
+  },
 
   ifStmt: function() {
     var t, cond, thenBody, elseBody;
@@ -315,8 +440,72 @@ Parser.prototype = {
   },
 
   switchStmt: function() {
+    var t, cond, bodies;
+    t = this.acceptKeyWord('switch');
+    this.acceptSymbol('(');
+    cond = this.expr();
+    this.acceptSymbol(')');
+    this.acceptSymbol('{');
+    bodies = this.caseClauses();
+    this.acceptSymbol('}');
 
     return "dummy";
+  },
+
+  caseClauses: function() {
+    var e, clauses;
+    while (this.peek().value === 'case') {
+      e = this.caseClause();
+    }
+    if (this.peek().value === 'default') {
+      e = this.defaultClause();
+    }
+    // TODO
+  },
+
+  caseClause: function() {
+    var vlaues, body;
+    values = this.cases();
+    body = this.caseBody();
+    // TODO
+  },
+
+  cases: function() {
+    var e, values;
+    this.acceptKeyWord('case');
+    e = this.primary();
+    this.acceptSymbol(':');
+    while (this.tryKeyWord('case')) {
+      e = this.primary();
+      this.acceptSymbol(':');
+      // TODO
+    }
+    // TODO
+  },
+
+  defaultClause: function() {
+    this.acceptKeyWord('default');
+    this.acceptSymbol(':');
+    body = this.caseBody();
+  },
+
+  caseBody: function() {
+    var s, stmts;
+    var handle;
+    s = this.stmt();
+    // TODO
+    handle = this.getHandle();
+    while(this.stmtLookahead()) {
+      this.restore(handle);
+      s = this.stmt();
+      // if stmt is ';' then s == null
+      if (s === null) {
+
+      }
+      // TODO
+      handle = this.getHandle();
+    }
+    // TODO
   },
 
   breakStmt: function() {
@@ -479,18 +668,16 @@ Parser.prototype = {
 
   typeref: function() {
     var ref;
-
     ref = this.typerefBase();
     out: while (true) {
       switch (this.peek().value) {
-        case '[': {
+        case '[':
           this.acceptSymbol('[');
           if (this.peek().type === 'number')
             var n = this.acceptNumber().value;
           this.acceptSymbol(']');
           //TODO 
           break;
-        }
         case '*':
           this.acceptSymbol('*');
           // TODO
@@ -518,6 +705,10 @@ Parser.prototype = {
               this.peek(2).value === ']') {
             this.acceptSymbol('[');
             this.acceptNumber().value;
+            this.acceptSymbol(']');
+          } else if (this.peek().value === '[' &&
+                     this.peek(1).value === ']') {
+            this.acceptSymbol('[');
             this.acceptSymbol(']');
           } else {
             return false;
@@ -609,7 +800,6 @@ Parser.prototype = {
           else this.error('fail to parse typerefBase3');
       }
     }
-
     if (lookahead) return true;
     else ;// TODO
   }, // end of typerefBase
@@ -636,6 +826,8 @@ Parser.prototype = {
     } else {
       params = this.fixedparamTyperefs();
       if (this.peek().value === ',' && this.peek(1).value === '...') {
+        this.acceptSymbol(',');
+        this.acceptSymbol('...');
         //TODO
       }
     }
@@ -661,6 +853,7 @@ Parser.prototype = {
 
     ref = this.typeref();
     while (this.peek().value === ',' && this.peek(1).value !== '...') {
+      this.acceptSymbol(',');
       ref = this.typeref();
       // TODO
     } 
@@ -670,6 +863,7 @@ Parser.prototype = {
   fixedparamTyperefsLookahead: function() {
     if (!this.typerefLookahead()) return false;
     while (this.peek().value === ',' && this.peek(1).value !== '...') {
+      this.acceptSymbol(',');
       if(!this.typerefLookahead()) return false;
     } 
     return true;
@@ -1145,7 +1339,7 @@ Parser.prototype = {
     }
 
     this.restore(handle);
-    if (this.tryKeyWord('sizeof') && this.trySymbol('(')) {
+    if (this.tryKeyWord('sizeof')) {
       this.restore(handle);
       this.acceptKeyWord('sizeof');
       type = this.unary();
@@ -1446,7 +1640,7 @@ Parser.prototype = {
   },
 
   tryKeyWord: function(value) {
-    if (this.peek().type === 'keyword' && this.peek().value === value) {
+    if (this.peek().type === 'keyWord' && this.peek().value === value) {
       this.acceptKeyWord(value);
       return true;
     } else {
@@ -1525,6 +1719,10 @@ Parser.prototype = {
                        this.peek().lineno,
                        this.peek().colno,
                        msg)
+  },
+
+  warn: function(msg) {
+    console.log("warn: " + msg);
   }
 }
 

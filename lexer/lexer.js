@@ -11,7 +11,7 @@ function lex(str, options) {
 }
 
 function Lexer(str, options) {
-  options = options || {};
+  var options = options || {};
   if (typeof str !== 'string') {
     throw new Error('Expected source code to be a string but got "' + (typeof str) + '"')
   }
@@ -135,10 +135,11 @@ Lexer.prototype = {
       });
 
 
-      var symbols = ["<<=", ">>=", "+=", "-=", "*=", "/=", "%=", ">=", "<=", "==",
-                     "!=", "->", "<<", ">>", "&&", "||", "&", "|", "++", "--",
-                     "+", "-", "*", "/", "%", ">", "<", ",", ".", "?", ":", ";",
-                     "(", ")", "{", "}", "[", "]", "!", "=", "~", "^" ];
+      var symbols = ["<<=", ">>=", "...", "+=", "-=", "*=", "/=", "%=", ">=", "<=",
+                     "==", "!=", "&=", "|=", "^=", "->", "<<", ">>", "&&", "||",
+                     "&", "|", "++", "--", "+", "-", "*", "/", "%", ">", "<", ",",
+                     ".", "?", ":", ";", "(", ")", "{", "}", "[", "]", "!", "=",
+                     "~", "^" ];
       symbols.forEach(function(ele) {
         ele = self.escape(ele);
         self.patternMatch("symbol", new RegExp("("+ele+")"));
