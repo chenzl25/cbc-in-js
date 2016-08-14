@@ -18,8 +18,8 @@ TokenStream.prototype = {
 
   constructor: TokenStream,
 
-  lookahead: function (index) {
-    index = index || this.cursor;
+  peek: function (index) {
+    index = index || 0;
     if (this._tokens.length <= this.cursor + index) {
       throw new Error('Cannot read past the end of a stream');
     }
@@ -35,14 +35,22 @@ TokenStream.prototype = {
 
   accept: function(type, value) {
     var ok = true;
-    if (type  && this.lookahead().type  !== type ) ok = false;
-    if (value && this.lookahead().value !== value) ok = false;
+    // console.log (ok, type,  this.peek().type, value, this.peek().value);
+    if (type  && this.peek().type  !== type ) ok = false;
+    // console.log (ok, type,  this.peek().type, value, this.peek().value);
+
+    if (value && this.peek().value !== value) ok = false;
+    // console.log (ok, type,  this.peek().type, value, this.peek().value);
+    
     if (!ok) {
       ErrorHandler.error("parse error",
-                         options.fileName, 
-                         this.lookhead().lineno,
-                         this.lookhead().colno,
-                         "we expect token: " + value);
+                         this.options.fileName, 
+                         this.peek().lineno,
+                         this.peek().colno,
+                         "we expect token with type: " + type +
+                         ", value: " + value + '\n' + 
+                         "but actually type: " + this.peek().type + 
+                         ", value: " + this.peek().value + "\n");
     } else {
       var result = this._tokens[this.cursor];
       this.advance();
