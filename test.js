@@ -14,7 +14,7 @@ files.forEach(function(fileName) {
     try {
       // var arr = lex(str, {fileName: fileName});console.log(arr);
       var options =  {fileName: fileName};
-      options.fullPath = __dirname + '/test';
+      options.dirPath = __dirname + '/test';
       var ast = parse(str, loader, options);
       // console.log(ast);
       console.log("pass: " + fileName);
@@ -24,4 +24,3 @@ files.forEach(function(fileName) {
     }
   }
 })
-

@@ -137,7 +137,7 @@ Parser.prototype = {
       if (this.loader) {
         // decls = this.loader.loadLibrary(libid);
         // TODO
-        var kt = this.loader.loadLibrary(libid, this.options.fullPath);
+        var kt = this.loader.loadLibrary(libid, this.options.dirPath);
         var self = this;
         kt.forEach(function(name) {
           self.addType(name); // TO DELETE
