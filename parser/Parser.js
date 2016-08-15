@@ -1,6 +1,10 @@
 var lex = require('../lexer/Lexer');
 var tokenStream = require('../lexer/TokenStream');
 var ErrorHandler = require('../util/ErrorHandler');
+var Entity = require('../entity/index');
+var type = require('../type/index');
+var ast = require('../ast/index');
+
 
 module.exports = parse;
 module.exports.Parser = Parser;
@@ -39,16 +43,15 @@ Parser.prototype = {
     return this.compilationUnit();
   },
 
-  compilationUnit: function(lookahead) {
-    var impdecls, decls;
+  compilationUnit: function() {
+    var t = this.peek();
+    var impdecls, decls; // Declarations
 
     impdecls = this.importStmts();
     decls = this.topDefs();
     this.EOF();
-
-    if (lookahead) return;
-    // TODO
-
+    decls.add(impdecls);
+    return new ast.AST(this.location(t), decls);
   },
 
   EOF: function() {
@@ -56,18 +59,24 @@ Parser.prototype = {
   },
 
   declarationFile: function() {
-    var impdecls, decls, funcdecl, vardecl, defconst,
-        defstruct, defunion, typedef;
+    var impdecls, decls; // Declarations
+    var funcdecl;        // UndefinedFunction
+    var vardecl;         // UndefinedVariable
+    var defconst;        // Constant
+    var defstruct;       // StructNode
+    var defunion;        // UnionNode
+    var typedef;         // TypedefNode
     var handle;
+
     impdecls = this.importStmts();
-    // decls.add(impdecls);
+    decls.add(impdecls);
     while (this.peek().type !== 'EOF') {
       handle = this.getHandle();
       if (this.tryKeyWord('extern') && this.typerefLookahead() &&
           this.tryIdentifier() && this.trySymbol('(')) {
         this.restore(handle);
         funcdecl = this.funcdecl();
-        // TODO
+        decls.addFuncdecl(funcdecl);
         continue;
       }
       this.restore(handle);
@@ -75,7 +84,7 @@ Parser.prototype = {
           this.tryIdentifier()) {
         this.restore(handle);
         vardecl = this.vardecl();
-        // TODO
+        decls.addVardecl(vardecl);
         continue;
       }
       
@@ -83,32 +92,34 @@ Parser.prototype = {
       switch(this.peek().value) {
         case 'const':
           defconst = this.defconst();
-          // TODO
+          decls.addConstant(defconst);
           break;
         case 'struct':
           defstruct =  this.defstruct();
-          // TODO
+          decls.addDefstruct(defstruct);
           break;
         case 'union':
           defunion = this.defunion();
-          // TODO
+          decls.addDefunion(defunion);
           break;
         case 'typedef':
           typedef = this.typedef();
-          // TODO
+          decls.addTypedef(typedef);
           break;
         default:
           this.error('fail to parse declarationFile');
       }
     }
     this.EOF();
-    return this.knownTypedefs; // TO DELETE
-    // return decls;
-    // TODO
+    // return this.knownTypedefs; // TO DELETE
+    return decls;
   }, // end of declarationFile
 
   funcdecl: function() {
-    var ret, n, ps;
+    var ret; // TypeRef
+    var n;   // String
+    var ps;  // Params
+
     this.acceptKeyWord('extern');
     ret = this.typeref();
     n = this.name();
@@ -116,37 +127,40 @@ Parser.prototype = {
     ps = this.params();
     this.acceptSymbol(')');
     this.acceptSymbol(';');
-    // TODO
+
+    t = new type.FunctionTypeRef(ret, ps.parametersTypeRef());
+    return new entity.UndefinedFunction(new type.TypeNode(t), n, ps);
   },
 
   vardecl: function() {
-    var ret, n;
+    var type; // TypeNode
+    var n;    // String
 
     this.acceptKeyWord('extern');
-    ret = this.typeref();
+    type = this.type();
     n = this.name();
     this.acceptSymbol(';');
-    // TODO
+    return new entity.UndefinedVariable(type, n);
   },
 
   importStmts: function() {
-    var libid, decls, impdecls;
+    var libid; // String
+    var decls, impdecls; // Declarations
 
     while(this.peek().value === 'import') {
       libid = this.importStmt();
       if (this.loader) {
-        // decls = this.loader.loadLibrary(libid);
-        // TODO
-        var kt = this.loader.loadLibrary(libid, this.options.dirPath);
-        var self = this;
-        kt.forEach(function(name) {
-          self.addType(name); // TO DELETE
-        })
+        decls = this.loader.loadLibrary(libid, this.options.dirPath);
+        this.addKnownTypedefs(decls.typedefs());
+        impdecls.add(decls);
+        // var kt = this.loader.loadLibrary(libid, this.options.dirPath);
+        // var self = this;
+        // kt.forEach(function(name) {
+          // self.addType(name); // TO DELETE
+        // })
       } else {
         this.warn("without loader");
       }
-      // impdecls.add(decls)
-      //TODO
     }
     return impdecls;
   },
@@ -166,9 +180,15 @@ Parser.prototype = {
   },
 
   topDefs: function() {
-    var decls, defun, defvars, defconst,
-        defstruct, defunion, typedef;
+    var decls;     // Declarations
+    var defun;     // DefinedFunction
+    var defvars;   // DefinedVariable[]
+    var defconst;  // Constant
+    var defstruct; // StructNode
+    var defunion;  // UnionNode
+    var typeref;   // TypedefNode
     var handle;
+
     // lookahead
     while(this.peek().type != 'EOF') {
       handle = this.getHandle();
@@ -179,39 +199,48 @@ Parser.prototype = {
         if (this.peek(1).value === '(') {
           this.restore(handle);
           defun = this.defun();
-          //TODO
+          decls.addDefun(defun);
         } else {
           this.restore(handle);
           defvars = this.defvars();
-          //TODO
+          decls.addDefvars(defvars);
         }
       } else {
         this.restore(handle);
         switch(this.peek().value) {
           case 'const':
             defconst = this.defconst();
+            decls.addConstant(defconst);
             break;
           case 'struct':
             defstruct =  this.defstruct();
+            decls.addDefstruct(defstruct);
             break;
           case 'union':
             defunion = this.defunion();
+            decls.addDefunion(defunion);
             break;
           case 'typedef':
             typedef = this.typedef();
+            decls.addTypedef(typedef);
             break;
           default:
             this.error('fail to parse topDefs');
         }
       }
     }
-    // TODO
+    return decls;
   }, // end of topDefs
 
 
 
   defun: function() {
-    var priv, ret, n, ps, body;
+    var priv; // Boelean
+    var ret;  // TypeRef
+    var n;    // String
+    var ps;   // Params
+    var body; // BlockNode
+    
     priv=this.storage();
     this.ret=this.typeref();
     n=this.name();
@@ -219,57 +248,66 @@ Parser.prototype = {
     ps=this.params();
     this.acceptSymbol(')');
     body=this.block();
-    // TODO
+
+    t = new type.FunctionTypeRef(ret, ps.parametersTypeRef());
+    return new entity.DefinedFunction(priv, new ast.TypeNode(t), n, ps, body);
   },
   
   params: function() {
-    var t, params;
+    var t;      // Token 
+    var params; // Params
+
     if (this.peek().value === 'void' && this.peek(1).value === ')') {
       t = this.acceptKeyWord('void');
-      // TODO
+      return new Params(location(t), []);
     } else {
       params = this.fixedparams();
       if (this.peek().value === ',' && this.peek(1).value === '...') {
         this.acceptSymbol(',');
         this.acceptSymbol('...');
-        //TODO
+        params.acceptVarargs();
       }
     }
-    //TODO
+    return params;
   },
 
   fixedparams: function() {
-    var param1, param, params;
+    var params;        // CBCParameter[]
+    var param1, param; // CBCParameter
 
     param1 = this.param();
+    params.push(param1);
     while (this.peek().value === ',' && this.peek(1).value !== '...') {
       this.acceptSymbol(',');
       param = this.param();
-      // TODO
-    } 
-    // TODO
+      params.push(param);
+    }
+    return new entity.Params(param1.location(), params);
   },
 
   param: function() {
-    var type, n;
+    var type; // TypeNode
+    var n;    // String
     type = this.type();
     n = this.name();
-    // TODO
+    return new entity.CBCParameter(type, n);
   },
 
   block: function() {
-    var t, vars, stams;
+    var t;     // Token
+    var vars;  // DefinedVariable[]
+    var stmts; //  StmtNode[]
     t = this.acceptSymbol('{');
     vars = this.defvarList();
     stmts = this.stmts(); 
     this.acceptSymbol('}');
 
-    //TODO
-    return "dummy";
+    return new ast.BlockNode(this.location(t), vars, stmts);
   },
 
   stmts: function() {
-    var ss, s;
+    var ss = []; // StmtNode[]
+    var s;       // StmtNode
     var handle;
 
     handle = this.getHandle();
@@ -277,23 +315,20 @@ Parser.prototype = {
       this.restore(handle);
       s = this.stmt();
       // if stmt is ';' then s is null
-      if (s === null) {
-
-      }
-      // TODO;
+      if (s) ss.push(s);
       handle = this.getHandle();
     }
     return ss;
   },
 
   stmt: function() {
-    var s = 'dummy', e;
+    var s; // StmtNode
+    var e; // ExprNode
     var handle;
     handle = this.getHandle();
 
     if (this.peek().type === 'identifier' && this.peek(1).value === ':') {
-        s = this.labeled_stmt();
-        // TODO
+        s = this.labeledStmt();
         return s;
     }
     
@@ -302,7 +337,7 @@ Parser.prototype = {
       this.restore(handle);  
       e = this.expr();
       this.acceptSymbol(';');
-      // TODO
+      s = new ast.ExprStmtNode(e.location(), e);
       return s;
     }
 
@@ -310,6 +345,7 @@ Parser.prototype = {
     switch(this.peek().value) {
       case ';':
         this.acceptSymbol(';');
+        s = null;
         break;
       case '{':
         s = this.block();
@@ -376,9 +412,21 @@ Parser.prototype = {
       return false;
     }
   },
+  
+  labeledStmt: function() {
+    var t; // Token
+    var s; // StmtNode
+
+    t = this.acceptIdentifier();
+    this.acceptSymbol(':');
+    s = this.stmt();
+    return new ast.LabelNode(this.location(t), t.value, s);
+  },
 
   ifStmt: function() {
-    var t, cond, thenBody, elseBody;
+    var t; // Token
+    var cond; // ExprNode
+    var thenBody, elseBody; // StmtNode
 
     t = this.acceptKeyWord('if');
     this.acceptSymbol('(');
@@ -388,24 +436,26 @@ Parser.prototype = {
     if (this.tryKeyWord('else')) {
       elseBody = this.stmt();
     }
-    // TODO
-    return "dummy";
+    return new ast.IfNode(this.location(t), cond, thenBody, elseBody);
   },
 
   WhileStmt: function() {
-    var t, cond, body;
+    var t; // Token
+    var cond; // ExprNode
+    var body; // StmtNode
 
     t = this.acceptKeyWord('while');
     this.acceptSymbol('(');
     cond = this.expr();
     this.acceptSymbol(')');
     body = this.stmt();
-    // TODO
-    return "dummy";
+    return new ast.WhileNode(this.location(t), cond, body);
   },
 
   doWhileStmt: function() {
-    var t, body, cond;
+    var t; // Token
+    var cond; // ExprNode
+    var body; // StmtNode
 
     t = this.acceptKeyWord('do');
     body = this.stmt();
@@ -414,33 +464,36 @@ Parser.prototype = {
     cond = this.expr();
     this.acceptSymbol(')');
     this.acceptSymbol(';');
-    // TODO
-    return "dummy";
+    return new ast.DoWhileNode(this.location(t), body, cond);
   },
 
   forStmt: function() {
-    var t, init, cond, incr, body;
+    var t; // Token
+    var init, cond, incr; // ExprNode
+    var body; // StmtNode
 
     this.acceptKeyWord('for');
     this.acceptSymbol('(');
     if (this.peek().value !== ';') {
-      this.expr();
+      init = this.expr();
     }
     this.acceptSymbol(';');
     if (this.peek().value !== ';') {
-      this.expr();
+      cond = this.expr();
     }
     this.acceptSymbol(';');
     if (this.peek().value !== ')') {
-      this.expr();
+      incr = this.expr();
     }
     this.acceptSymbol(')');
-    //TODO
-    return "dummy";
+    body = this.stmt();
+    return new ast.ForNode(this.location(t), init, cond, incr, body);
   },
 
   switchStmt: function() {
-    var t, cond, bodies;
+    var t;      // Token
+    var cond;   // ExprNode
+    var bodies; // CaseNode[]
     t = this.acceptKeyWord('switch');
     this.acceptSymbol('(');
     cond = this.expr();
@@ -448,100 +501,116 @@ Parser.prototype = {
     this.acceptSymbol('{');
     bodies = this.caseClauses();
     this.acceptSymbol('}');
-
-    return "dummy";
+    return new ast.SwitchNode(this.location(t), cond, bodies);
   },
 
   caseClauses: function() {
-    var e, clauses;
+    var clauses; // CaseNode[]
+    var e;       // CaseNode
     while (this.peek().value === 'case') {
       e = this.caseClause();
+      clauses.push(e);
     }
     if (this.peek().value === 'default') {
       e = this.defaultClause();
+      clauses.push(e);
     }
-    // TODO
+    return clauses;
   },
 
   caseClause: function() {
-    var vlaues, body;
+    var vlaues; // ExprNode[]
+    var body;   // BlockNode
     values = this.cases();
     body = this.caseBody();
-    // TODO
+    return new ast.CaseNode(body.location(), values, body);
   },
 
   cases: function() {
-    var e, values;
+    var values; // ExprNode[]
+    var e;      // ExprNode
+
     this.acceptKeyWord('case');
     e = this.primary();
+    values.push(e);
     this.acceptSymbol(':');
     while (this.tryKeyWord('case')) {
       e = this.primary();
       this.acceptSymbol(':');
-      // TODO
+      values.push(e);
     }
-    // TODO
+    return values;
   },
 
   defaultClause: function() {
+    var body; // BlockNode
     this.acceptKeyWord('default');
     this.acceptSymbol(':');
     body = this.caseBody();
+    return new ast.CaseNode(body.location(), [], body);
   },
 
   caseBody: function() {
-    var s, stmts;
+    var stmts; // StmtNode[]
+    var s;     // StmtNode
     var handle;
+
     s = this.stmt();
-    // TODO
+    // if stmt is ';' then s == null
+    if (s) stmts.push(s);
     handle = this.getHandle();
     while(this.stmtLookahead()) {
       this.restore(handle);
       s = this.stmt();
       // if stmt is ';' then s == null
-      if (s === null) {
-
-      }
-      // TODO
+      if (s) stmts.push(s);
       handle = this.getHandle();
     }
-    // TODO
+    if (! (stmts[stmts.length - 1] instanceof ast.BreakNode)) {
+      throw new Error("missing break statement at the last of case clause");
+    }
+    return new ast.BlockNode(stmts[0].location(), [], stmts);
   },
 
   breakStmt: function() {
-    this.acceptKeyWord('break');
+    var t; // Token
+
+    t = this.acceptKeyWord('break');
     this.acceptSymbol(';');
-    return "dummy";
+    return new ast.BreakNode(this.location(t));
   },
 
   continueStmt: function() {
-    this.acceptKeyWord('continue');
+    var t; // Token
+
+    t = this.acceptKeyWord('continue');
     this.acceptSymbol(';');
-    return "dummy";
+    return new ast.ContinueNode(this.location(t));
   },
 
   gotoStmt: function() {
-    var t, name;
+    var t;    // Token
+    var name; // String
 
     t = this.acceptKeyWord('goto');
-    name = this.acceptIdentifier();
-    // TODO
-    return "dummy";
+    name = this.acceptIdentifier().value;
+    return new ast.GotoNode(this.location(t), name);
   },
 
   returnStmt: function() {
-    var t, expr;
+    var t;    // Token
+    var expr; // ExprNode
+
     this.acceptKeyWord('return');
     if (this.peek().value !== ';') {
       expr = this.expr();
     }
     this.acceptSymbol(';');
-    // TODO
-    return "dummy";
+    return new ast.ReturnNode(this.location(t), expr);
   },
 
   defvarList: function() {
-    var result, vars;
+    var result = [], vars = []; // DefinedVariable[]
     var handle;
     
     while (true) {
@@ -549,17 +618,21 @@ Parser.prototype = {
       if (this.storageLookahead() && this.typeLookahead()) {
         this.restore(handle);
         vars = this.defvars();
-        // TODO
+        result.concat(vars);
       } else {
         this.restore(handle);
         break;
       }
     }
-    //TODO
+    return result;
   },
 
   defvars: function() {
-    var defs ,priv, type, name, init = null;
+    var defs = [];    // DefinedVariable[]
+    var priv;         // Boolean
+    var type;         // TypeNode
+    var name;         // String
+    var init = null;  // ExprNode
 
     priv = this.storage();
     type = this.type();
@@ -567,7 +640,7 @@ Parser.prototype = {
     if (this.peek().value === '=') {
       this.acceptSymbol('=');
       init = this.expr();
-      // TODO
+      defs.push(new entity.DefinedVariable(priv, type, name, init));
       init = null;
     }
     while (this.peek().value === ',') {
@@ -577,68 +650,79 @@ Parser.prototype = {
         this.acceptSymbol('=');
         init = this.expr();
       }
-      // TODO
+      defs.push(new entity.DefinedVariable(priv, type, name, init));
       init = null;
     }
     this.acceptSymbol(';');
-    // TODO
+    return defs;
   },
 
   
   defconst: function() {
-    var type, name, value;
+    var type;  // TypeNode
+    var name;  // String
+    var value; // ExprNode
+
     this.acceptKeyWord('const');
     type = this.type();
     name = this.name();
     this.acceptSymbol('=');
     value = this.expr();
     this.acceptSymbol(';');
-    // TODO
+    return new entity.Constant(type, name, value);
   },
 
   
   defstruct: function() {
-    var t, n, membs;
+    var t;  // Token
+    var n;  // String
+    var membs; // Slot[]
 
     t = this.acceptKeyWord('struct');
     n = this.name();
     membs = this.memberList();
     this.acceptSymbol(';');
-    // TODO
+
+    return new ast.StructNode(this.location(t), new ast.StructTypeRef(n), n, membs);
   },
 
   
   defunion: function() {
-    var t, n, membs;
+    var t;  // Token
+    var n;  // String
+    var membs; // Slot[]
 
     t = this.acceptKeyWord('union');
     n = this.name();
     membs = this.memberList();
     this.acceptSymbol(';');
-    // TODO
+    return new ast.UnionNode(this.location(t), new ast.UnionTypeRef(n), n, membs);
   },
 
   memberList: function() {
-    var s, membs;
+    var s; // Slot
+    var membs = []; // Slot[]
     var handle;
+
     this.acceptSymbol("{");
     handle = this.getHandle();
     while(this.typeLookahead()) {
       this.restore(handle);
       s = this.slot();
-      // TODO
+      membs.push(s);
       this.acceptSymbol(';');
       handle = this.getHandle();
     }
     this.acceptSymbol('}');
-    // TODO
+    return membs;
   },
 
   slot: function() {
-    var t, n;
+    var t; // TypeNode
+    var n; // String
     t = this.type();
     n = this.name();
-    //TODO;
+    return new ast.Slot(t, n);
   },
 
   storage: function() {
@@ -659,7 +743,7 @@ Parser.prototype = {
   
   type: function() {
     var typeref = this.typeref();
-    // TODO
+    return type.TypeNode(typeref);
   },
 
   typeLookahead: function()  {
@@ -667,32 +751,36 @@ Parser.prototype = {
   },
 
   typeref: function() {
-    var ref;
+    var ref;    // TypeRef
+    var n;      // number
+    var params  // ParamTypeRefs
+
     ref = this.typerefBase();
     out: while (true) {
       switch (this.peek().value) {
         case '[':
           this.acceptSymbol('[');
-          if (this.peek().type === 'number')
+          if (this.peek().type === 'number') {
             var n = this.acceptNumber().value;
+          }
           this.acceptSymbol(']');
-          //TODO 
+          ref = new type.ArrayTypeRef(ref, n);
           break;
         case '*':
           this.acceptSymbol('*');
-          // TODO
+          ref = new type.PointerTypeRef(ref);
           break;
         case '(':
           this.acceptSymbol('(');
           var params = this.paramTyperefs();
           this.acceptSymbol(')');
-          // TODO
+          ref = new type.FunctionTypeRef(ref, params);
           break;
         default:
           break out;
       }
     }
-    // TODO
+    return ref;
   },
 
   typerefLookahead: function() {
@@ -721,8 +809,7 @@ Parser.prototype = {
         case '(':
           this.acceptSymbol('(');
           if (!this.paramTyperefsLookahead()) return false;
-          if (this.peek().value === ')') this.acceptSymbol(')');
-          else return false;
+          if (!this.trySymbol(')')) return false;
           break;
         default:
           break out;
@@ -732,33 +819,31 @@ Parser.prototype = {
   },
 
   typerefBase: function(lookahead) {
+    var t, name; // Token
+
     if (this.peek().value === 'unsigned') {
       this.acceptKeyWord('unsigned');
       switch(this.peek().value) {
         case 'char':
           this.acceptKeyWord('char');
-          // TODO
-          break;
+          return type.IntegerTypeRef.ucharRef(this.location(t));
         case 'short':
           this.acceptKeyWord('short');
-          // TODO
-          break;
+          return type.IntegerTypeRef.ushortRef(this.location(t));
         case 'int':
           this.acceptKeyWord('int');
-          // TODO
-          break;
+          return type.IntegerTypeRef.uintRef(this.location(t));
         case 'long':
           this.acceptKeyWord('long');
-          // TODO
-          break;
+          return type.IntegerTypeRef.ulongRef(this.location(t));
         default:
           if (lookahead) return false;
           else this.error('fail to parse typerefBase1');
       }
     } else if (this.peek().type === 'identifier') {
       if (this.isType(this.peek().value)) {
-        var t = this.acceptIdentifier();
-        // TODO
+        name = this.acceptIdentifier();
+        return new UserTypeRef(this.location(name), name);
       } else {
         if (lookahead) return false;
         else this.error('fail to parse typerefBase2');
@@ -766,42 +851,34 @@ Parser.prototype = {
     } else {
       switch(this.peek().value) {
         case 'void':
-          this.acceptKeyWord('void');
-          // TODO
-          break;
+          t = this.acceptKeyWord('void');
+          return new type.VoidTypeRef(this.location(t));
         case 'char':
-          this.acceptKeyWord('char');
-          // TODO
-          break;
+          t = this.acceptKeyWord('char');
+          return type.IntegerTypeRef.charRef(this.location(t));
         case 'short':
-          this.acceptKeyWord('short');
-          // TODO
-          break;
+          t = this.acceptKeyWord('short');
+          return type.IntegerTypeRef.shortRef(this.location(t));
         case 'int':
-          this.acceptKeyWord('int');
-          // TODO
-          break;
+          t = this.acceptKeyWord('int');
+          return type.IntegerTypeRef.intRef(this.location(t));
         case 'long':
-          this.acceptKeyWord('long');
-          // TODO
-          break;
+          t = this.acceptKeyWord('long');
+          return type.IntegerTypeRef.longRef(this.location(t));
         case 'struct':
-          this.acceptKeyWord('struct');
-          var t = this.acceptIdentifier();
-          // TODO
-          break;
+          t = this.acceptKeyWord('struct');
+          name = this.acceptIdentifier();
+          return new type.StructTypeRef(this.location(t), name);
         case 'union':
-          this.acceptKeyWord('union');
-          var t = this.acceptIdentifier();
-          // TODO
-          break;
+          t = this.acceptKeyWord('union');
+          name = this.acceptIdentifier();
+          return new type.UnionTypeRef(this.location(t), name);
         default:
           if (lookahead) return false;
           else this.error('fail to parse typerefBase3');
       }
     }
     if (lookahead) return true;
-    else ;// TODO
   }, // end of typerefBase
   
   typerefBaseLookahead: function() {
@@ -815,23 +892,24 @@ Parser.prototype = {
     this.acceptSymbol(';');
     
     this.addType(name);
-    // TODO
+    return new ast.TypedefNode(this.location(t), ref, name);
   },
 
   paramTyperefs: function() {
-    var t, params;
+    var params = []; //ParamTypeRefs
+
     if (this.peek().value === 'void' && this.peek(1).value === ')') {
-      t = this.acceptKeyWord('void');
-      // TODO
+      this.acceptKeyWord('void');
+      return new ast.ParamTypeRefs([]);
     } else {
       params = this.fixedparamTyperefs();
       if (this.peek().value === ',' && this.peek(1).value === '...') {
         this.acceptSymbol(',');
         this.acceptSymbol('...');
-        //TODO
+        params.acceptVarargs();
       }
     }
-    //TODO
+    return params;
   },
 
   paramTyperefsLookahead: function() {
@@ -849,15 +927,16 @@ Parser.prototype = {
   },
 
   fixedparamTyperefs: function() {
-    var ref, refs;
+    var ref;  // TypeRef
+    var refs = []; // TypeRef[]
 
     ref = this.typeref();
     while (this.peek().value === ',' && this.peek(1).value !== '...') {
       this.acceptSymbol(',');
       ref = this.typeref();
-      // TODO
+      refs.push(ref);
     } 
-    // TODO
+    return new ast.ParamTypeRefs(refs);
   },
 
   fixedparamTyperefsLookahead: function() {
@@ -878,7 +957,8 @@ Parser.prototype = {
   },
 
   expr: function() {
-    var lhs, rhs, expr, op;
+    var lhs, rhs, expr; // ExprNode
+    var op; // String
     var handle = this.getHandle();
 
     if (this.termLookahead() && this.trySymbol('=')) {
@@ -886,8 +966,7 @@ Parser.prototype = {
       lhs = this.term();
       this.acceptSymbol('=');
       rhs = this.expr();
-      // TODO 
-      return;
+      return new ast.AssignNode(lhs, rhs);
     } 
 
     this.restore(handle);
@@ -896,8 +975,7 @@ Parser.prototype = {
       lhs = this.term();
       op = this.opassignOp();
       rhs = this.expr();
-      // TODO
-      return;
+      return new ast.OpAssignNode(lhs, op, rhs);
     } 
 
     this.restore(handle);
@@ -981,14 +1059,15 @@ Parser.prototype = {
   },
 
   expr10: function() {
-    var c, t, e;
+    var c, t, e; // ExprNode
+
     c = this.expr9();
     if (this.peek().value === '?') {
       this.acceptSymbol('?');
       t = this.expr();
       this.acceptSymbol(':');
       e = this.expr10();
-      // TODO
+      return new ast.CondExprNode(c, t, e);
     }
     return c;
   },
@@ -998,20 +1077,20 @@ Parser.prototype = {
     if (this.peek().value === '?') {
       this.acceptSymbol('?');
       if (!this.exprLookahead()) return false;
-      if (this.peek().value === ':') this.acceptSymbol(':');
-      else return false;
+      if (!this.trySymbol(':')) return false;
       if (!this.expr10Lookahead()) return false
     }
     return true
   },
 
   expr9: function() {
-    var l, r;
+    var l, r;  // ExprNode
+
     l = this.expr8();
     while (this.peek().value === '||') {
       this.acceptSymbol('||');
       r = this.expr8();
-      // TODO
+      l = new ast.LogicalOrNode(l, r);
     }
     return l;
   },
@@ -1026,12 +1105,13 @@ Parser.prototype = {
   },
 
   expr8: function() {
-    var l, r;
+    var l, r; // ExprNode
+
     l = this.expr7();
     while (this.peek().value === '&&') {
       this.acceptSymbol('&&');
       r = this.expr7();
-      // TODO
+      l = new ast.LogicalAndNode(l, r);
     }
     return l;
   },
@@ -1046,7 +1126,8 @@ Parser.prototype = {
   },
 
   expr7: function() {
-    var l, r;
+    var l, r; // ExprNode
+
     l = this.expr6();
     out: while(true) {
       var op = this.peek().value;
@@ -1073,7 +1154,7 @@ Parser.prototype = {
           break out;
       }
       r = this.expr6();
-      // TODO
+      l = new ast.BinaryOpNode(l, op, r);
     }
     return l;
   },
@@ -1110,12 +1191,13 @@ Parser.prototype = {
   },
 
   expr6: function() {
-    var l, r;
+    var l, r; // ExprNode
+
     l = this.expr5();
     while (this.peek().value === '|') {
       this.acceptSymbol('|');
       r = this.expr5();
-      // TODO
+      l = new ast.BinaryOpNode(l, '|', r);
     }
     return l;
   },
@@ -1130,12 +1212,13 @@ Parser.prototype = {
   },
 
   expr5: function() {
-    var l, r;
+    var l, r; // ExprNode
+
     l = this.expr4();
     while (this.peek().value === '^') {
       this.acceptSymbol('^');
       r = this.expr4();
-      // TODO
+      l = new ast.BinaryOpNode(l, '^', r);
     }
     return l;
   },
@@ -1150,12 +1233,13 @@ Parser.prototype = {
   },
 
   expr4: function() {
-    var l, r;
+    var l, r; // ExprNode
+
     l = this.expr3();
     while (this.peek().value === '&') {
       this.acceptSymbol('&');
       r = this.expr3();
-      // TODO
+      l = new ast.BinaryOpNode(l, '&', r);
     }
     return l;
   },
@@ -1170,7 +1254,8 @@ Parser.prototype = {
   },
 
   expr3: function() {
-    var l, r;
+    var l, r; // ExprNode
+
     l = this.expr2();
     out: while(true) {
       var op = this.peek().value;
@@ -1185,7 +1270,7 @@ Parser.prototype = {
           break out;
       }
       r = this.expr2();
-      // TODO
+      l = new ast.BinaryOpNode(l, op, r);
     }
     return l;
   },
@@ -1210,7 +1295,8 @@ Parser.prototype = {
   },
 
   expr2: function() {
-    var l, r;
+    var l, r; // ExprNode
+
     l = this.expr1();
     out: while(true) {
       var op = this.peek().value;
@@ -1225,7 +1311,7 @@ Parser.prototype = {
           break out;
       }
       r = this.expr1();
-      // TODO
+      l = new ast.BinaryOpNode(l, op, r);
     }
     return l;
   },
@@ -1250,7 +1336,8 @@ Parser.prototype = {
   },
 
   expr1: function() {
-    var l, r;
+    var l, r; // ExprNode
+
     l = this.term();
     out: while(true) {
       var op = this.peek().value;
@@ -1268,7 +1355,7 @@ Parser.prototype = {
           break out;
       }
       r = this.term();
-      // TODO
+      l = new ast.BinaryOpNode(l, op, r);
     }
     return l;
   },
@@ -1296,7 +1383,8 @@ Parser.prototype = {
   },
 
   term: function() {
-    var type, e;
+    var type  // TypeNode
+    var e;    // ExprNode
     var handle = this.getHandle();
 
     if (this.trySymbol('(') && this.typeLookahead()){
@@ -1305,12 +1393,12 @@ Parser.prototype = {
       type = this.type();
       this.acceptSymbol(')');
       e = this.term();
-      // TODO
+      e = new ast.CastNode(type, e);
     } else {
       this.restore(handle);
       e = this.unary();
-      // TODO
     }
+    return e;
   },
 
   termLookahead: function() {
@@ -1324,7 +1412,8 @@ Parser.prototype = {
   }, 
 
   unary: function() {
-    var type, e;
+    var type;   // TypeNode
+    var e;      // ExprNode
     var handle;
     handle = this.getHandle();
 
@@ -1334,8 +1423,7 @@ Parser.prototype = {
       this.acceptSymbol('(');
       type = this.type();
       this.acceptSymbol(')');
-      // TODO
-      return;
+      return new ast.SizeofTypeNode(t, this.sizeT());
     }
 
     this.restore(handle);
@@ -1343,8 +1431,7 @@ Parser.prototype = {
       this.restore(handle);
       this.acceptKeyWord('sizeof');
       type = this.unary();
-      // TODO
-      return;
+      return new ast.SizeofExprNode(e, this.sizeT());
     }
 
     this.restore(handle);
@@ -1352,39 +1439,47 @@ Parser.prototype = {
       case "++" :
         this.acceptSymbol('++');
         e = this.unary();
+        e = new ast.PrefixOpNode('++', e);
         break;
       case "--" :
         this.acceptSymbol('--');
         e = this.unary();
+        e = new ast.PrefixOpNode('--', e);
         break;
       case "+"  :
         this.acceptSymbol('+');
         e = this.term();
+        e = new ast.UnaryOpNode('+', e);
         break;
       case "-"  :
         this.acceptSymbol('-');
         e = this.term();
+        e = new ast.UnaryOpNode('-', e);
         break;
       case "!"  :
         this.acceptSymbol('!');
         e = this.term();
+        e = new ast.UnaryOpNode('!', e);
         break;
       case "~"  :
         this.acceptSymbol('~');
         e = this.term();
+        e = new ast.UnaryOpNode('~', e);
         break;
       case "*"  :
         this.acceptSymbol('*');
         e = this.term();
+        e = new ast.DereferenceNode(e);
         break;
       case "&"  :
         this.acceptSymbol('&');
         e = this.term();
+        e = new ast.AddressNode(e);
         break;
       default:
         e = this.postfix();
     }
-    // TODO
+    return e;
   }, // end of unary
 
   unaryLookahead: function() {
@@ -1441,46 +1536,48 @@ Parser.prototype = {
   }, // end of unaryLookahead
 
   postfix: function() {
-    var expr, idx, memb, args;
+    var expr, idx; // ExprNode
+    var memb;      // String
+    var args;      // ExprNode[]
 
     expr = this.primary();
     out: while (true) {
       switch(this.peek().value) {
         case '++' :
           this.acceptSymbol('++');
-          // TODO
+          expr = new ast.SuffixOpNode("++", expr);
           break;
         case '--' :
           this.acceptSymbol('--');
-          // TODO
+          expr = new ast.SuffixOpNode("--", expr);
           break;
         case '[' :
           this.acceptSymbol('[');
           idx = this.expr();
           this.acceptSymbol(']');
-          // TODO
+          expr = new ast.ArefNode(expr, idx); 
           break;
         case '.' :
           this.acceptSymbol('.');
           memb = this.name();
-          // TODO
+          expr = new ast.MemberNode(expr, memb);
           break;
         case '->' :
           this.acceptSymbol('->');
           memb = this.name();
-          // TODO
+          expr = new ast.PtrMemberNode(expr, memb);
           break;
         case '(' :
           this.acceptSymbol('(');
           args = this.args();
           this.acceptSymbol(')');
-          // TODO
+          expr = new ast.FuncallNode(expr, args);
           break;
         default:
           break out;
       }
     }
-    // TODO
+    return expr
   }, // end of postfix
   
   postfixLookahead: function() {
@@ -1496,8 +1593,7 @@ Parser.prototype = {
         case '[' :
           this.acceptSymbol('[');
           if (!this.exprLookahead()) return false;
-          if (this.peek().value === ']') this.acceptSymbol(']');
-          else return false;
+          if (!this.trySymbol(']')) return false;
           break;
         case '.' :
           this.acceptSymbol('.');
@@ -1510,8 +1606,7 @@ Parser.prototype = {
         case '(' :
           this.acceptSymbol('(');
           if (!this.argsLookahed()) return false;
-          if (this.peek().value === ')') this.acceptSymbol(')');
-          else return false;
+          if (!this.trySymbol(')')) return false;
           break;
         default:
           break out;
@@ -1521,20 +1616,21 @@ Parser.prototype = {
   }, // end of postfixLookahead
 
   args: function() {
-    var args, arg;
+    var args = []; // ExprNode[]
+    var arg;       // ExprNode
 
     if (this.peek().value === ')') {
-      return null;
+      // do nothing;
     } else {
       arg = this.expr();
-      // TODO
+      args.push(arg);
       while(this.peek().value === ',') {
         this.acceptSymbol(',');
         arg == this.expr();
-        // TODO
+        args.push(arg);
       }
     }
-    // TODO
+    return args;
   },
 
   argsLookahed: function() {
@@ -1551,7 +1647,9 @@ Parser.prototype = {
   },
 
   primary: function() {
-    var t, e;
+    var t; // Token
+    var e; // ExprNode
+
     t = this.peek();
     if (t.value === '(') {
       this.acceptSymbol('(');
@@ -1563,19 +1661,23 @@ Parser.prototype = {
     switch(t.type) {
       case 'number':
         t = this.acceptNumber();
-        // TODO
+        e = this.integerNode(this.location(t), t.value);
         break;
       case 'character':
         t = this.acceptCharacter();
-        // TODO
+        e = new ast.IntegerLiteralNode(this.location(t), 
+                                       ast.IntegerTypeRef.charRef(), 
+                                       t.value.charCodeAt(0));
         break;
       case 'string':
         t = this.acceptString();
-        // TODO
+        return new ast.StringLiteralNode(this.location(t),
+                    new ast.PointerTypeRef(ast.IntegerTypeRef.charRef()),
+                    t.value);
         break;
       case 'identifier':
         t = this.acceptIdentifier();
-        // TODO
+        return new ast.VariableNode(this.location(t), t.value);
         break;
       default:
         this.error('fail to parse primary');
@@ -1703,6 +1805,7 @@ Parser.prototype = {
 
   location: function(token) {
     //TODO
+    return ast.Location(this.options.fileName, token.lineno, token.colno);
   },
 
   isType: function(name) {
@@ -1711,6 +1814,35 @@ Parser.prototype = {
 
   addType: function(name) {
     this.knownTypedefs.add(name);
+  },
+  
+  /**
+   * @params {Array} TypedefNode
+   */
+
+  addKnownTypedefs: function(typedefs) {
+    for (var n of typedefs) {
+      this.addType(n.name());
+    }
+  },
+
+  integerNode: function(loc, value) {
+    if (value.slice(-2) === 'UL'){
+      value = value.slice(-2);
+      return new ast.IntegerLiteralNode(loc, type.IntegerTypeRef.ulongRef(), value);
+    } else if (value.slice(-1) === 'U') {
+      value = value.slice(-1);
+      return new ast.IntegerLiteralNode(loc, type.IntegerTypeRef.uintRef(), value);
+    } else if (value.slice(-1) === 'L') {
+      value = value.slice(-1);
+      return new ast.IntegerLiteralNode(loc, type.IntegerTypeRef.longRef(), value);
+    } else {
+      return new ast.IntegerLiteralNode(loc, type.IntegerTypeRef.intRef(), value);
+    }
+  },
+
+  sizeT: function() {
+    return type.IntegerTypeRef.ulongRef();
   },
 
   error: function(msg) {

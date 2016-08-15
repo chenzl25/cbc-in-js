@@ -8,7 +8,7 @@ var loader = new LibraryLoader;
 var files = fs.readdirSync('./test');
 
 files.forEach(function(fileName) {
-  // if (fileName !== "hello.cb") return;
+  if (fileName !== "hello.cb") return;
   if (fileName.slice(-3) === '.cb') {
     var str = fs.readFileSync("./test/" + fileName, "utf8");
     try {
@@ -17,7 +17,7 @@ files.forEach(function(fileName) {
       options.dirPath = __dirname + '/test';
       var ast = parse(str, loader, options);
       // console.log(ast);
-      console.log("pass: " + fileName);
+      // console.log("pass: " + fileName);
     } catch (err) {
       console.log("fail: " + fileName)
       console.log(err);

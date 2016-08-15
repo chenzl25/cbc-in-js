@@ -148,8 +148,8 @@ Lexer.prototype = {
 
       self.patternMatch("identifier", /([a-zA-Z_][a-zA-Z0-9_]*)/);
       self.patternMatch("character", /(\'[\w\s]\')/);
-      self.patternMatch("number", /([0-9]+)/); //only interger
-      self.patternMatch("number", /(0[xX][0-9a-fA-F]+)/);
+      self.patternMatch("number", /([0-9]+U?L?)/); //only interger
+      self.patternMatch("number", /(0[xX][0-9a-fA-F]+U?L?)/);
       self.patternMatch("lineComment", /(\/\/.*)\n/);
 
   },
