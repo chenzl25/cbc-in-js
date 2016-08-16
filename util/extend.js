@@ -8,7 +8,7 @@ function $extend (sub, sup) {
   fun.prototype = sup.prototype;
   var subNewPrototype = $import(new fun(), subOriginPrototype); 
   sub.prototype = subNewPrototype;
-  sub.prototype.super = sup;
+  sub.super = sup;
   sub.prototype.constructor = sub;
   return sub;
 }
@@ -28,7 +28,7 @@ function $extend (sub, sup) {
 // }
 
 // function B(name, age) {
-//   this.super(name);
+//   B.super.call(this, name);
 //   this.age = age;
 // }
 // B.prototype.method2 = function() {

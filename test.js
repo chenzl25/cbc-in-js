@@ -8,7 +8,7 @@ var loader = new LibraryLoader;
 var files = fs.readdirSync('./test');
 
 files.forEach(function(fileName) {
-  if (fileName !== "hello.cb") return;
+  if (fileName !== "switch.cb") return;
   if (fileName.slice(-3) === '.cb') {
     var str = fs.readFileSync("./test/" + fileName, "utf8");
     try {

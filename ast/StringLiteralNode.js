@@ -6,7 +6,7 @@ module.exports = StringLiteralNode;
 $extend(StringLiteralNode, LiteralNode);
 function StringLiteralNode(loc, ref, value) {
   // Location loc, TypeRef ref, String value
-  this.super(loc, ref);
+  StringLiteralNode.super.call(this, loc, ref);
   this.value = value;
 };
 

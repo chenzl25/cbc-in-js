@@ -6,13 +6,13 @@ module.exports = IntegerLiteralNode;
 
 $extend(IntegerLiteralNode, LiteralNode);
 function IntegerLiteralNode(loc, ref, value) {
-  this.super(value);
-  this.value;
+  IntegerLiteralNode.super.call(this, loc, ref);
+  this._value = value;
 };
 
 $import(IntegerLiteralNode.prototype, {
   value: function() {
-    return this.value;
+    return this._value;
   },
 
   // accept: function(){}

@@ -1,7 +1,7 @@
 var lex = require('../lexer/Lexer');
 var tokenStream = require('../lexer/TokenStream');
 var ErrorHandler = require('../util/ErrorHandler');
-var Entity = require('../entity/index');
+var entity = require('../entity/index');
 var type = require('../type/index');
 var ast = require('../ast/index');
 
@@ -11,8 +11,7 @@ module.exports.Parser = Parser;
 
 function parse(str, loader, options) {
   var parser = new Parser(str, loader, options);
-  var ast = parser.parse();
-  return ast
+  return parser.parse();
 }
 
 function Parser(str, loader ,options) {
@@ -67,6 +66,8 @@ Parser.prototype = {
     var defunion;        // UnionNode
     var typedef;         // TypedefNode
     var handle;
+
+    decls = new ast.Declarations();
 
     impdecls = this.importStmts();
     decls.add(impdecls);
@@ -129,7 +130,7 @@ Parser.prototype = {
     this.acceptSymbol(';');
 
     t = new type.FunctionTypeRef(ret, ps.parametersTypeRef());
-    return new entity.UndefinedFunction(new type.TypeNode(t), n, ps);
+    return new entity.UndefinedFunction(new ast.TypeNode(t), n, ps);
   },
 
   vardecl: function() {
@@ -146,6 +147,8 @@ Parser.prototype = {
   importStmts: function() {
     var libid; // String
     var decls, impdecls; // Declarations
+
+    impdecls = new ast.Declarations();
 
     while(this.peek().value === 'import') {
       libid = this.importStmt();
@@ -188,6 +191,8 @@ Parser.prototype = {
     var defunion;  // UnionNode
     var typeref;   // TypedefNode
     var handle;
+
+    decls = new ast.Declarations();
 
     // lookahead
     while(this.peek().type != 'EOF') {
@@ -259,7 +264,7 @@ Parser.prototype = {
 
     if (this.peek().value === 'void' && this.peek(1).value === ')') {
       t = this.acceptKeyWord('void');
-      return new Params(location(t), []);
+      return new entity.Params(this.location(t), []);
     } else {
       params = this.fixedparams();
       if (this.peek().value === ',' && this.peek(1).value === '...') {
@@ -272,7 +277,7 @@ Parser.prototype = {
   },
 
   fixedparams: function() {
-    var params;        // CBCParameter[]
+    var params = [];        // CBCParameter[]
     var param1, param; // CBCParameter
 
     param1 = this.param();
@@ -337,6 +342,7 @@ Parser.prototype = {
       this.restore(handle);  
       e = this.expr();
       this.acceptSymbol(';');
+      console.log(e)
       s = new ast.ExprStmtNode(e.location(), e);
       return s;
     }
@@ -472,7 +478,7 @@ Parser.prototype = {
     var init, cond, incr; // ExprNode
     var body; // StmtNode
 
-    this.acceptKeyWord('for');
+    t = this.acceptKeyWord('for');
     this.acceptSymbol('(');
     if (this.peek().value !== ';') {
       init = this.expr();
@@ -505,7 +511,7 @@ Parser.prototype = {
   },
 
   caseClauses: function() {
-    var clauses; // CaseNode[]
+    var clauses = []; // CaseNode[]
     var e;       // CaseNode
     while (this.peek().value === 'case') {
       e = this.caseClause();
@@ -527,7 +533,7 @@ Parser.prototype = {
   },
 
   cases: function() {
-    var values; // ExprNode[]
+    var values = []; // ExprNode[]
     var e;      // ExprNode
 
     this.acceptKeyWord('case');
@@ -551,7 +557,7 @@ Parser.prototype = {
   },
 
   caseBody: function() {
-    var stmts; // StmtNode[]
+    var stmts = []; // StmtNode[]
     var s;     // StmtNode
     var handle;
 
@@ -601,7 +607,7 @@ Parser.prototype = {
     var t;    // Token
     var expr; // ExprNode
 
-    this.acceptKeyWord('return');
+    t = this.acceptKeyWord('return');
     if (this.peek().value !== ';') {
       expr = this.expr();
     }
@@ -683,7 +689,7 @@ Parser.prototype = {
     membs = this.memberList();
     this.acceptSymbol(';');
 
-    return new ast.StructNode(this.location(t), new ast.StructTypeRef(n), n, membs);
+    return new ast.StructNode(this.location(t), new type.StructTypeRef(n), n, membs);
   },
 
   
@@ -696,7 +702,7 @@ Parser.prototype = {
     n = this.name();
     membs = this.memberList();
     this.acceptSymbol(';');
-    return new ast.UnionNode(this.location(t), new ast.UnionTypeRef(n), n, membs);
+    return new ast.UnionNode(this.location(t), new type.UnionTypeRef(n), n, membs);
   },
 
   memberList: function() {
@@ -743,7 +749,7 @@ Parser.prototype = {
   
   type: function() {
     var typeref = this.typeref();
-    return type.TypeNode(typeref);
+    return new ast.TypeNode(typeref);
   },
 
   typeLookahead: function()  {
@@ -754,14 +760,13 @@ Parser.prototype = {
     var ref;    // TypeRef
     var n;      // number
     var params  // ParamTypeRefs
-
     ref = this.typerefBase();
     out: while (true) {
       switch (this.peek().value) {
         case '[':
           this.acceptSymbol('[');
           if (this.peek().type === 'number') {
-            var n = this.acceptNumber().value;
+            n = this.acceptNumber().value;
           }
           this.acceptSymbol(']');
           ref = new type.ArrayTypeRef(ref, n);
@@ -818,35 +823,34 @@ Parser.prototype = {
     return true;
   },
 
-  typerefBase: function(lookahead) {
-    var t, name; // Token
-
+  typerefBase: function() {
+    var t;    // Token
+    var name; // String
     if (this.peek().value === 'unsigned') {
       this.acceptKeyWord('unsigned');
       switch(this.peek().value) {
         case 'char':
-          this.acceptKeyWord('char');
+          t = this.acceptKeyWord('char');
           return type.IntegerTypeRef.ucharRef(this.location(t));
         case 'short':
-          this.acceptKeyWord('short');
+          t = this.acceptKeyWord('short');
           return type.IntegerTypeRef.ushortRef(this.location(t));
         case 'int':
-          this.acceptKeyWord('int');
+          t = this.acceptKeyWord('int');
           return type.IntegerTypeRef.uintRef(this.location(t));
         case 'long':
-          this.acceptKeyWord('long');
+          t = this.acceptKeyWord('long');
           return type.IntegerTypeRef.ulongRef(this.location(t));
         default:
-          if (lookahead) return false;
-          else this.error('fail to parse typerefBase1');
+          this.error('fail to parse typerefBase1');
       }
     } else if (this.peek().type === 'identifier') {
       if (this.isType(this.peek().value)) {
-        name = this.acceptIdentifier();
-        return new UserTypeRef(this.location(name), name);
+        t = this.acceptIdentifier();
+        name = t.value;
+        return new type.UserTypeRef(this.location(t), name);
       } else {
-        if (lookahead) return false;
-        else this.error('fail to parse typerefBase2');
+        this.error('fail to parse typerefBase2');
       }
     } else {
       switch(this.peek().value) {
@@ -867,22 +871,73 @@ Parser.prototype = {
           return type.IntegerTypeRef.longRef(this.location(t));
         case 'struct':
           t = this.acceptKeyWord('struct');
-          name = this.acceptIdentifier();
+          name = this.acceptIdentifier().value;
           return new type.StructTypeRef(this.location(t), name);
         case 'union':
           t = this.acceptKeyWord('union');
-          name = this.acceptIdentifier();
+          name = this.acceptIdentifier().value;
           return new type.UnionTypeRef(this.location(t), name);
         default:
-          if (lookahead) return false;
-          else this.error('fail to parse typerefBase3');
+          this.error('fail to parse typerefBase3');
       }
     }
-    if (lookahead) return true;
   }, // end of typerefBase
   
   typerefBaseLookahead: function() {
-    return this.typerefBase(true);
+    if (this.peek().value === 'unsigned') {
+      this.acceptKeyWord('unsigned');
+      switch(this.peek().value) {
+        case 'char':
+          this.acceptKeyWord('char');
+          return true;
+        case 'short':
+          this.acceptKeyWord('short');
+          return true;
+        case 'int':
+          this.acceptKeyWord('int');
+          return true;
+        case 'long':
+          this.acceptKeyWord('long');
+          return true;
+        default:
+          return false;
+      }
+    } else if (this.peek().type === 'identifier') {
+      if (this.isType(this.peek().value)) {
+        this.acceptIdentifier().value;
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      switch(this.peek().value) {
+        case 'void':
+          this.acceptKeyWord('void');
+          return true;
+        case 'char':
+          this.acceptKeyWord('char');
+          return true;
+        case 'short':
+          this.acceptKeyWord('short');
+          return true;
+        case 'int':
+          this.acceptKeyWord('int');
+          return true;
+        case 'long':
+          this.acceptKeyWord('long');
+          return true;
+        case 'struct':
+          this.acceptKeyWord('struct');
+          this.acceptIdentifier().value;
+          return true;
+        case 'union':
+          this.acceptKeyWord('union');
+          this.acceptIdentifier().value;
+          return true;
+        default:
+          return false;
+      }
+    }
   },
 
   typedef: function() {
@@ -900,7 +955,7 @@ Parser.prototype = {
 
     if (this.peek().value === 'void' && this.peek(1).value === ')') {
       this.acceptKeyWord('void');
-      return new ast.ParamTypeRefs([]);
+      return new type.ParamTypeRefs([]);
     } else {
       params = this.fixedparamTyperefs();
       if (this.peek().value === ',' && this.peek(1).value === '...') {
@@ -936,7 +991,7 @@ Parser.prototype = {
       ref = this.typeref();
       refs.push(ref);
     } 
-    return new ast.ParamTypeRefs(refs);
+    return new type.ParamTypeRefs(refs);
   },
 
   fixedparamTyperefsLookahead: function() {
@@ -1666,13 +1721,13 @@ Parser.prototype = {
       case 'character':
         t = this.acceptCharacter();
         e = new ast.IntegerLiteralNode(this.location(t), 
-                                       ast.IntegerTypeRef.charRef(), 
+                                       type.IntegerTypeRef.charRef(), 
                                        t.value.charCodeAt(0));
         break;
       case 'string':
         t = this.acceptString();
         return new ast.StringLiteralNode(this.location(t),
-                    new ast.PointerTypeRef(ast.IntegerTypeRef.charRef()),
+                    new type.PointerTypeRef(type.IntegerTypeRef.charRef()),
                     t.value);
         break;
       case 'identifier':
@@ -1804,8 +1859,7 @@ Parser.prototype = {
   },
 
   location: function(token) {
-    //TODO
-    return ast.Location(this.options.fileName, token.lineno, token.colno);
+    return new ast.Location(this.options.fileName, token.lineno, token.colno);
   },
 
   isType: function(name) {

@@ -5,18 +5,18 @@ module.exports = IntegerTypeRef;
 
 $extend(IntegerTypeRef, TypeRef);
 function IntegerTypeRef(name, loc) {
-  this.super(loc);
-  this.name = name;
+  IntegerTypeRef.super.call(this, loc);
+  this._name = name;
 };
 
 $import(IntegerTypeRef.prototype, {
   name: function() {
-    return this.name;
+    return this._name;
   },
 
   equals: function(other) {
-    if (!(other instanceof IntegerTypeRef)) return false;
-    return other.name() === this.name;
+    return (other instanceof IntegerTypeRef) &&
+           other._name === this._name;
   }
 });
 
@@ -51,5 +51,4 @@ IntegerTypeRef.uintRef = function(loc) {
 IntegerTypeRef.ulongRef = function(loc) {
   return new IntegerTypeRef("unsigned long", loc);
 }
-
 

@@ -8,35 +8,35 @@ module.exports = TypeNode;
 $extend(TypeNode, Node);
 function TypeNode(ref_or_type) {
   if (ref_or_type instanceof Type) {
-    this.type = ref_or_type;
+    this._type = ref_or_type;
   } else if (ref_or_type instanceof TypeRef) {
-    this.typeRef = ref_or_type;
+    this._typeRef = ref_or_type;
   } else {
     throw new Error('TypeNode constructor paramter type error');
   }
 };
 
-$import(TypeNode, {
+$import(TypeNode.prototype, {
   typeRef: function() {
-    return this.typeRef;
+    return this._typeRef;
   },
 
   isResolved: function() {
-    return this.type? true: false;
+    return this._type? true: false;
   },
 
   setType: function(type) {
-    if (this.type) throw new Error('TypeNode set type twice');
-    this.type = type;
+    if (this._type) throw new Error('TypeNode set type twice');
+    this._type = type;
   },
 
   type: function() {
-    if (!this.type) throw new Error('TypeNode type is not resolved');
-    return this.type;
+    if (!this._type) throw new Error('TypeNode type is not resolved');
+    return this._type;
   },
 
   location: function() {
-    return this.typeRef? this.typeRef.location(): null;
+    return this._typeRef? this._typeRef.location(): null;
   }
   // accept
 });

@@ -6,13 +6,13 @@ module.exports = LiteralNode;
 
 $extend(LiteralNode, ExprNode);
 function LiteralNode(loc, ref) {
-  this.location = loc; // Location
-  this.typeNode = new TypeNode(ref); // TypeRef
+  this._location = loc; // Location
+  this._typeNode = new TypeNode(ref); // TypeRef
 };
 
 $import(LiteralNode.prototype, {
   location: function() {
-    return this.location;
+    return this._location;
   },
 
   /**
@@ -20,11 +20,11 @@ $import(LiteralNode.prototype, {
    */
 
   type: function() {
-    return this.typeNode.type();
+    return this._typeNode.type();
   },
 
   typeNode: function() {
-    return this.typeNode;
+    return this._typeNode;
   },
 
   isConstant: function() {
