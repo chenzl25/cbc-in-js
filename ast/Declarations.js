@@ -13,13 +13,13 @@ function Declarations() {
 
 Declarations.prototype = {
   add: function(decls) {
-    this._defvars.concat(decls.defvars);
-    this._vardecls.concat(decls.vardecls);
-    this._funcdecls.concat(decls.funcdecls);
-    this._constants.concat(decls.constants);
-    this._defstructs.concat(decls.defstructs);
-    this._defunions.concat(decls.defunions);
-    this._typedefs.concat(decls.typedefs);
+    this._defvars = this._defvars.concat(decls.defvars());
+    this._vardecls = this._vardecls.concat(decls.vardecls());
+    this._funcdecls = this._funcdecls.concat(decls.funcdecls());
+    this._constants = this._constants.concat(decls.constants());
+    this._defstructs = this._defstructs.concat(decls.defstructs());
+    this._defunions = this._defunions.concat(decls.defunions());
+    this._typedefs = this._typedefs.concat(decls.typedefs());
   },
 
   addDefvar: function(v) {
@@ -27,7 +27,7 @@ Declarations.prototype = {
   },
 
   addDefvars: function(vs) {
-    this._defvars.concat(vs);
+    this._defvars = this._defvars.concat(vs);
   },
 
   defvars: function() {
@@ -51,11 +51,11 @@ Declarations.prototype = {
   },
 
   addDefun: function(c) {
-    this._funcdecls.push(c);
+    this._defuns.push(c);
   },
 
   defuns: function() {
-    return this._funcdecls;
+    return this._defuns;
   },
 
   addFuncdecl: function(func) {

@@ -7,8 +7,8 @@ module.exports = TypeDefinition;
 $extend(TypeDefinition, Node);
 function TypeDefinition(loc, ref, name) {
   // Location loc, TypeRef ref, String name
+  this._location = loc;
   this._name = name;
-  this._location = name;
   this._typeNode = new TypeNode(ref);
 };
 

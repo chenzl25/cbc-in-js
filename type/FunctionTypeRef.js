@@ -6,6 +6,7 @@ module.exports = FunctionTypeRef;
 $extend(FunctionTypeRef, TypeRef);
 function FunctionTypeRef(returnType, params) {
   // TypeRef returnType, ParamTypeRefs params
+  FunctionTypeRef.super.call(this, returnType.location());
   this._returnType = returnType;
   this._params = params;
 };

@@ -68,7 +68,6 @@ Parser.prototype = {
     var handle;
 
     decls = new ast.Declarations();
-
     impdecls = this.importStmts();
     decls.add(impdecls);
     while (this.peek().type !== 'EOF') {
@@ -112,7 +111,6 @@ Parser.prototype = {
       }
     }
     this.EOF();
-    // return this.knownTypedefs; // TO DELETE
     return decls;
   }, // end of declarationFile
 
@@ -247,7 +245,7 @@ Parser.prototype = {
     var body; // BlockNode
     
     priv=this.storage();
-    this.ret=this.typeref();
+    ret=this.typeref();
     n=this.name();
     this.acceptSymbol('(');
     ps=this.params();
@@ -342,7 +340,6 @@ Parser.prototype = {
       this.restore(handle);  
       e = this.expr();
       this.acceptSymbol(';');
-      console.log(e)
       s = new ast.ExprStmtNode(e.location(), e);
       return s;
     }
@@ -624,7 +621,7 @@ Parser.prototype = {
       if (this.storageLookahead() && this.typeLookahead()) {
         this.restore(handle);
         vars = this.defvars();
-        result.concat(vars);
+        result = result.concat(vars);
       } else {
         this.restore(handle);
         break;
