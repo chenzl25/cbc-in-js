@@ -1,4 +1,3 @@
-var lex = require('../lexer/Lexer');
 var tokenStream = require('../lexer/TokenStream');
 var ErrorHandler = require('../util/ErrorHandler');
 var entity = require('../entity/index');
@@ -9,21 +8,18 @@ var ast = require('../ast/index');
 module.exports = parse;
 module.exports.Parser = Parser;
 
-function parse(str, loader, options) {
-  var parser = new Parser(str, loader, options);
+function parse(tokens, loader, options) {
+  var parser = new Parser(tokens, loader, options);
   return parser.parse();
 }
 
-function Parser(str, loader ,options) {
+function Parser(tokens, loader ,options) {
   var options = options || {};
-  if (typeof str !== 'string') {
-    throw new Error('Expected source code to be a string but got "' + (typeof str) + '"')
-  }
   if (typeof options !== 'object') {
     throw new Error('Expected "options" to be an object but got "' + (typeof options) + '"');
   }
 
-  this.ts = new tokenStream(lex(str, options), options); // tokenStream
+  this.ts = new tokenStream(tokens, options); // tokenStream
   this.loader = loader;
   this.options = options;
   this.ast = null;
@@ -1475,14 +1471,14 @@ Parser.prototype = {
       this.acceptSymbol('(');
       type = this.type();
       this.acceptSymbol(')');
-      return new ast.SizeofTypeNode(t, this.sizeT());
+      return new ast.SizeofTypeNode(type, this.sizeT());
     }
 
     this.restore(handle);
     if (this.tryKeyWord('sizeof')) {
       this.restore(handle);
       this.acceptKeyWord('sizeof');
-      type = this.unary();
+      e = this.unary();
       return new ast.SizeofExprNode(e, this.sizeT());
     }
 

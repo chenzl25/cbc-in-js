@@ -27,6 +27,10 @@ $import(UserTypeRef.prototype, {
   equals: function(other) {
     return (other instanceof UserTypeRef) && 
            this._name === other._name;
+  },
+
+  toString: function() {
+    return this._name;
   }
 });
 

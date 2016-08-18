@@ -27,5 +27,9 @@ $import(UnionTypeRef.prototype, {
   equals: function(other) {
     return (other instanceof UnionTypeRef) && 
            this._name === other._name;
+  },
+
+  toString: function() {
+    return 'union ' + this._name;
   }
 });

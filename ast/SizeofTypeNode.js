@@ -45,7 +45,7 @@ $import(SizeofTypeNode.prototype, {
   },
 
   location: function() {
-    this._operand.location();
+    return this._operand.location();
   },
   // accept
 });

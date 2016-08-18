@@ -27,5 +27,9 @@ $import(StructTypeRef.prototype, {
   equals: function(other) {
     return (other instanceof StructTypeRef) && 
            this._name === other._name;
+  },
+
+  toString: function() {
+    return 'struct ' + this._name;
   }
 });

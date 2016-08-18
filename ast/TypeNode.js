@@ -37,6 +37,10 @@ $import(TypeNode.prototype, {
 
   location: function() {
     return this._typeRef? this._typeRef.location(): null;
+  },
+
+  toString: function() {
+    return this._typeRef.toString();
   }
   // accept
 });

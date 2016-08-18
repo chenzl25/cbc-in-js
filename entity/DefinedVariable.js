@@ -42,6 +42,10 @@ $import(DefinedVariable.prototype, {
     return this.hasInitializer();
   },
 
+  initializer: function() {
+    return this._initializer;
+  },
+
   setInitializer: function(expr) {
     this._initializer = expr;
   },

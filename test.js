@@ -1,27 +1,27 @@
 var fs = require('fs');
+var compile = require('./compiler/Compiler');
+var ASTPrinter = require("./visitor/ASTPrinter");
 
-var lex = require("./lexer/Lexer");
-var parse = require("./parser/Parser");
-var LibraryLoader = require("./parser/LibraryLoader");
-var loader = new LibraryLoader;
-
+var printer = new ASTPrinter();
 var files = fs.readdirSync('./test');
 
-files.forEach(function(fileName) {
-  if (fileName !== "hello.cb") return;
+files = files.filter(function(fileName) {
+  // if (fileName !== "hello.cb") return false;
   if (fileName.slice(-3) === '.cb') {
-    var str = fs.readFileSync("./test/" + fileName, "utf8");
-    try {
-      // var arr = lex(str, {fileName: fileName});console.log(arr);
-      var options =  {fileName: fileName};
-      options.dirPath = __dirname + '/test';
-      var ast = parse(str, loader, options);
-      // console.log(ast);
-      // console.log(JSON.stringify(ast));
-      // console.log("pass: " + fileName);
-    } catch (err) {
-      console.log("fail: " + fileName)
-      console.log(err);
-    }
+    return true;
   }
+}).map(function(fileName) {
+    var result = {};
+    result.src = fs.readFileSync("./test/" + fileName, "utf8");
+    result.options = {};
+    result.options.fileName = fileName;
+    result.options.dirPath = __dirname + '/test';
+    return result;
 })
+
+var filesResult = compile(files);
+filesResult.forEach(function(obj) {
+  // console.log(obj.tokens);
+  // printer.print(obj.ast);
+});
+

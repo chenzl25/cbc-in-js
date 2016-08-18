@@ -30,7 +30,7 @@ $import(UnaryOpNode.prototype, {
   },
 
   expr: function() {
-    return expr;
+    return this._expr;
   },
 
   setExpr: function(expr) {

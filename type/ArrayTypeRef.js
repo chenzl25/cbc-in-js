@@ -34,5 +34,12 @@ $import(ArrayTypeRef.prototype, {
 
   isLengthUndefined: function() {
     return (length == undefined);
+  },
+
+  toString: function() {
+    return this._baseType.toString() + 
+          '[' + 
+          (this._length?this._length:'') + 
+          ']';
   }
 });

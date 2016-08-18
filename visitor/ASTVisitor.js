@@ -6,7 +6,8 @@ function ASTVisitor() {
 };
 
 ASTVisitor.prototype = {
-  accept: function(node) {
+  visit: function(node) {
+    // NOTE: keep the subClass above the supClass.
     if (node instanceof ast.BlockNode) this.visitBlockNode(node);
     else if (node instanceof ast.ExprStmtNode) this.visitExprStmtNode(node);
     else if (node instanceof ast.IfNode) this.visitIfNode(node);
@@ -26,8 +27,6 @@ ASTVisitor.prototype = {
     else if (node instanceof ast.CondExprNode) this.visitCondExprNode(node);
     else if (node instanceof ast.LogicalOrNode) this.visitLogicalOrNode(node);
     else if (node instanceof ast.LogicalAndNode) this.visitLogicalAndNode(node);
-    else if (node instanceof ast.BinaryOpNode) this.visitBinaryOpNode(node);
-    else if (node instanceof ast.UnaryOpNode) this.visitUnaryOpNode(node);
     else if (node instanceof ast.PrefixOpNode) this.visitPrefixOpNode(node);
     else if (node instanceof ast.SuffixOpNode) this.visitSuffixOpNode(node);
     else if (node instanceof ast.ArefNode) this.visitArefNode(node);
@@ -37,6 +36,8 @@ ASTVisitor.prototype = {
     else if (node instanceof ast.DereferenceNode) this.visitDereferenceNode(node);
     else if (node instanceof ast.AddressNode) this.visitAddressNode(node);
     else if (node instanceof ast.CastNode) this.visitCastNode(node);
+    else if (node instanceof ast.UnaryOpNode) this.visitUnaryOpNode(node);
+    else if (node instanceof ast.BinaryOpNode) this.visitBinaryOpNode(node);
     else if (node instanceof ast.SizeofExprNode) this.visitSizeofExprNode(node);
     else if (node instanceof ast.SizeofTypeNode) this.visitSizeofTypeNode(node);
     else if (node instanceof ast.VariableNode) this.visitVariableNode(node);
@@ -45,30 +46,22 @@ ASTVisitor.prototype = {
     else throw new Error('ASTVisitor node type error');
   },
 
-  visitStmt(stmt) {
-    stmt.accept(this);
-  },
-
   visitStmts(stmts) {
     for (var s of stmts) {
-      this.visitStmt(s);
+      this.visit(s);
     }
-  },
-
-  visitExpr(expr) {
-    expr.accept(this);
   },
 
   visitExprs(exprs) {
     for (var e of exprs) {
-      this.visitExpr(e);
+      this.visit(e);
     }
   },
 
   visitBlockNode: function(node) {
     for (var v of node.variables()) {
       if (v.hasInitializer()) {
-        this.visitExpr(v.initializer());
+        this.visit(v.initializer());
       }
     }
     this.visitStmts(node.stmts());
@@ -76,71 +69,71 @@ ASTVisitor.prototype = {
   },
 
   visitExprStmtNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
-  visitIfNode: function(n) {
-    this.visitExpr(n.cond());
-    visitStmt(n.thenBody());
-    if (n.elseBody() != null) {
-      this.visitStmt(n.elseBody());
+  visitIfNode: function(node) {
+    this.visit(node.cond());
+    visit(node.thenBody());
+    if (node.elseBody() != null) {
+      this.visit(node.elseBody());
     }
     return null;
   },
 
-  visitSwitchNode: function(n) {
-    this.visitExpr(n.cond());
-    this.visitStmts(n.cases());
+  visitSwitchNode: function(node) {
+    this.visit(node.cond());
+    this.visitStmts(node.cases());
     return null;
   },
 
-  visitCaseNode: function(n) {
-    this.this.visitExprs(n.values());
-    this.visitStmt(n.body());
+  visitCaseNode: function(node) {
+    this.this.visitExprs(node.values());
+    this.visit(node.body());
     return null;
   },
 
-  visitWhileNode: function(n) {
-    this.visitExpr(n.cond());
-    this.visitStmt(n.body());
+  visitWhileNode: function(node) {
+    this.visit(node.cond());
+    this.visit(node.body());
     return null;
   },
 
-  visitDoWhileNode: function(n) {
-    this.visitStmt(n.body());
-    this.visitExpr(n.cond());
+  visitDoWhileNode: function(node) {
+    this.visit(node.body());
+    this.visit(node.cond());
     return null;
   },
 
-  visitForNode: function(n) {
-    this.visitStmt(n.init());
-    this.visitExpr(n.cond());
-    this.visitStmt(n.incr());
-    this.visitStmt(n.body());
+  visitForNode: function(node) {
+    this.visit(node.init());
+    this.visit(node.cond());
+    this.visit(node.incr());
+    this.visit(node.body());
     return null;
   },
 
-  visitBreakNode: function(n) {
+  visitBreakNode: function(node) {
     return null;
   },
 
-  visitContinueNode: function(n) {
+  visitContinueNode: function(node) {
     return null;
   },
 
-  visitGotoNode: function(n) {
+  visitGotoNode: function(node) {
     return null;
   },
 
-  visitLabelNode: function(n) {
-    this.visitStmt(n.stmt());
+  visitLabelNode: function(node) {
+    this.visit(node.stmt());
     return null;
   },
 
-  visitReturnNode: function(n) {
-    if (n.expr() != null) {
-      this.visitExpr(n.expr());
+  visitReturnNode: function(node) {
+    if (node.expr() != null) {
+      this.visit(node.expr());
     }
     return null;
   },
@@ -149,99 +142,97 @@ ASTVisitor.prototype = {
   // Expressions
   //
 
-  visitCondExprNode: function(n) {
-    this.visitExpr(n.cond());
-    this.visitExpr(n.thenExpr());
-    if (n.elseExpr() != null) {
-      this.visitExpr(n.elseExpr());
-    }
+  visitCondExprNode: function(node) {
+    this.visit(node.cond());
+    this.visit(node.thenExpr());
+    this.visit(node.elseExpr());
     return null;
   },
 
   visitLogicalOrNode: function(node) {
-    this.visitExpr(node.left());
-    this.visitExpr(node.right());
+    this.visit(node.left());
+    this.visit(node.right());
     return null;
   },
 
   visitLogicalAndNode: function(node) {
-    this.visitExpr(node.left());
-    this.visitExpr(node.right());
+    this.visit(node.left());
+    this.visit(node.right());
     return null;
   },
 
-  visitAssignNode: function(n) {
-    this.visitExpr(n.lhs());
-    this.visitExpr(n.rhs());
+  visitAssignNode: function(node) {
+    this.visit(node.lhs());
+    this.visit(node.rhs());
     return null;
   },
 
-  visitOpAssignNode: function(n) {
-    this.visitExpr(n.lhs());
-    this.visitExpr(n.rhs());
+  visitOpAssignNode: function(node) {
+    this.visit(node.lhs());
+    this.visit(node.rhs());
     return null;
   },
 
-  visitBinaryOpNode: function(n) {
-    this.visitExpr(n.left());
-    this.visitExpr(n.right());
+  visitBinaryOpNode: function(node) {
+    this.visit(node.left());
+    this.visit(node.right());
     return null;
   },
 
   visitUnaryOpNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
   visitPrefixOpNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
   visitSuffixOpNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
   visitFuncallNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     this.visitExprs(node.args());
     return null;
   },
 
   visitArefNode: function(node) {
-    this.visitExpr(node.expr());
-    this.visitExpr(node.index());
+    this.visit(node.expr());
+    this.visit(node.index());
     return null;
   },
 
   visitMemberNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
   visitPtrMemberNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
   visitDereferenceNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
   visitAddressNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
   visitCastNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 
   visitSizeofExprNode: function(node) {
-    this.visitExpr(node.expr());
+    this.visit(node.expr());
     return null;
   },
 

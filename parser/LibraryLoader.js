@@ -53,7 +53,9 @@ LibraryLoader.prototype = {
     var options = {fileName: libid, dirPath: this.nextCurPath(libid, curPath)};
     var str = this.searchLibrary(libid, curPath);
     var Parser = require(path.resolve(__dirname, '../parser/Parser')).Parser;
-    parser = new Parser(str, this, options);
+    var lex = require(path.resolve(__dirname, '../lexer/Lexer'));
+    var tokens = lex(str, options);
+    parser = new Parser(tokens, this, options);
     this.loadedLibraries[this.fullPath(libid,curPath)] = parser.declarationFile();
     this.loadingLibraries[this.fullPath(libid,curPath)] = false;
     return this.loadedLibraries[this.fullPath(libid,curPath)];

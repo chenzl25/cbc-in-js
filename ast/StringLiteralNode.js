@@ -7,22 +7,22 @@ $extend(StringLiteralNode, LiteralNode);
 function StringLiteralNode(loc, ref, value) {
   // Location loc, TypeRef ref, String value
   StringLiteralNode.super.call(this, loc, ref);
-  this.value = value;
+  this._value = value;
 };
 
 
 $import(StringLiteralNode.prototype, {
   value: function() {
-    return this.value;
+    return this._value;
   },
 
   entry: function() {
-    return this.entry;
+    return this._entry;
   },
 
   setEntry: function(ent) {
     // ConstantEntry ent
-    this.entry = ent;
+    this._entry = ent;
   }
   // accept: function(){}
 });

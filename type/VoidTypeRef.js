@@ -16,6 +16,10 @@ $import(VoidTypeRef.prototype, {
 
   equals: function(other) {
     return other instanceof VoidTypeRef;
+  },
+
+  toString: function() {
+    return 'void';
   }
 });
 

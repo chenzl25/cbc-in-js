@@ -22,6 +22,10 @@ $import(PointerTypeRef.prototype, {
   equals: function(other) {
     if (!other instanceof PointerTypeRef) return false;
     return this.baseType.equals(other.baseType());
+  },
+
+  toString: function() {
+    return this.baseType.toString() + '*';
   }
 });
 

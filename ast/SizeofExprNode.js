@@ -37,7 +37,7 @@ $import(SizeofExprNode.prototype, {
   },
 
   location: function() {
-    this._expr.location();
+    return this._expr.location();
   },
   // accept
 });

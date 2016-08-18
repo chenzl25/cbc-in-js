@@ -17,6 +17,10 @@ $import(IntegerTypeRef.prototype, {
   equals: function(other) {
     return (other instanceof IntegerTypeRef) &&
            other._name === this._name;
+  },
+
+  toString: function() {
+    return this._name;
   }
 });
 
