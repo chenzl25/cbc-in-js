@@ -639,9 +639,9 @@ Parser.prototype = {
     if (this.peek().value === '=') {
       this.acceptSymbol('=');
       init = this.expr();
-      defs.push(new entity.DefinedVariable(priv, type, name, init));
-      init = null;
     }
+    defs.push(new entity.DefinedVariable(priv, type, name, init));
+    init = null;
     while (this.peek().value === ',') {
       this.acceptSymbol(',');
       name = this.name();

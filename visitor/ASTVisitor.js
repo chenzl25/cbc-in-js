@@ -75,7 +75,7 @@ ASTVisitor.prototype = {
 
   visitIfNode: function(node) {
     this.visit(node.cond());
-    visit(node.thenBody());
+    this.visit(node.thenBody());
     if (node.elseBody() != null) {
       this.visit(node.elseBody());
     }
@@ -89,7 +89,7 @@ ASTVisitor.prototype = {
   },
 
   visitCaseNode: function(node) {
-    this.this.visitExprs(node.values());
+    this.visitExprs(node.values());
     this.visit(node.body());
     return null;
   },

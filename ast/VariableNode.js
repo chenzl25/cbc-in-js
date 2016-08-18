@@ -14,7 +14,7 @@ function VariableNode(_1, _2) {
   } else if (_1 instanceof DefinedVariable) {
     // Entity _1
     this._entity = _1;
-    this._name = this.entity.name();
+    this._name = this._entity.name();
   } else {
     throw new Error('VariableNode constructor parameter type error');
   }

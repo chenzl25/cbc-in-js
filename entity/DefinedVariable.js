@@ -23,7 +23,7 @@ DefinedVariable.tmp = function(t /*Type*/) {
 
 $import(DefinedVariable.prototype, {
   isDefined: function() {
-    return false;    
+    return true;    
   },
 
   setSequence: function(seq) {

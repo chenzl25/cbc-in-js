@@ -17,5 +17,9 @@ Location.prototype = {
 
   col: function() {
     return this._col;
+  },
+
+  toString: function() {
+    return this._fileName + ':' + this._line;
   }
 }
