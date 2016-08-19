@@ -26,7 +26,7 @@ $import(FunctionTypeRef.prototype, {
     return this._returnType;
   },
 
-  ParamTypeRefs: function() {
+  params: function() {
     return this._params;
   },
 

@@ -11,7 +11,6 @@ module.exports.CastNode = require('./CastNode');
 module.exports.CompositeTypeDefinition = require('./CompositeTypeDefinition');
 module.exports.CondExprNode = require('./CondExprNode');
 module.exports.ContinueNode = require('./ContinueNode');
-module.exports.DeclarationVisitor = require('./DeclarationVisitor');
 module.exports.Declarations = require('./Declarations');
 module.exports.DereferenceNode = require('./DereferenceNode');
 module.exports.DoWhileNode = require('./DoWhileNode');

@@ -26,7 +26,16 @@ $import(TypeNode.prototype, {
   },
 
   setType: function(type) {
-    if (this._type) throw new Error('TypeNode set type twice');
+    if (this._type) {
+      return; // because  of the LibraryLoader cache, setType may be called multi-times
+      // if (!this._type.isSameType(type)) {
+      //   console.log('=======================')
+      //   console.log(this._type);
+      //   console.log('-----------------------')
+      //   console.log(type)
+      // }
+      // throw new Error('TypeNode set type twice');
+    }
     this._type = type;
   },
 

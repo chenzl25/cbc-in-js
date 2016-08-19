@@ -1,6 +1,8 @@
 var $import = require('./import');
 module.exports = $extend;
 
+// sub should have only one level prototype
+// and only support single extend
 function $extend (sub, sup) {
   var subOriginPrototype = sub.prototype;
   $import(sub, sup); // for static method

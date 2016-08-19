@@ -2,6 +2,7 @@ var $extend = require('../util/extend');
 var $import = require('../util/import');
 var TypeDefinition = require('./TypeDefinition');
 var UserTypeRef = require('../type/UserTypeRef');
+var UserType = require('../type/UserType');
 var TypeNode = require('./TypeNode');
 module.exports = TypedefNode;
 

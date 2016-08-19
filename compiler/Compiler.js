@@ -3,8 +3,8 @@ var fs = require('fs');
 var lex = require('../lexer/Lexer');
 var parse = require('../parser/Parser');
 var LibraryLoader = require('../parser/LibraryLoader');
+var TypeTable = require('../type/TypeTable');
 var visitor = require('../visitor/index');
-
 
 module.exports = compile;
 module.exports.Compiler = Compiler;
@@ -38,7 +38,8 @@ Compiler.prototype = {
         var obj = {};
         obj.tokens = lex(file.src, file.options);
         obj.ast = parse(obj.tokens, loader, file.options);
-        this.semanticAnalyze(obj.ast);
+        var typeTable = TypeTable.ilp32();
+        this.semanticAnalyze(obj.ast, typeTable);
         // TODO
         obj.ir;
         obj.asm;
@@ -46,15 +47,18 @@ Compiler.prototype = {
       } catch (err) {
         console.log(file.options.fileName)
         console.log(err);
+        // console.log(err.stack)
         console.log('')
       }
     }
     return filesResult;
   },
 
-  semanticAnalyze: function(ast) {
+  semanticAnalyze: function(ast, typeTable) {
     var localResolver = new visitor.LocalResolver()
     localResolver.resolve(ast);
+    var typeResolver = new visitor.TypeResolver(typeTable);
+    typeResolver.resolve(ast);
   }
 }
 

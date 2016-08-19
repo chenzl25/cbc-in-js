@@ -5,7 +5,6 @@ module.exports.ConstantTable = require('./ConstantTable');
 module.exports.DefinedFunction = require('./DefinedFunction');
 module.exports.DefinedVariable = require('./DefinedVariable');
 module.exports.Entity = require('./Entity');
-module.exports.EntityVisitor = require('./EntityVisitor');
 module.exports.Func = require('./Func');
 module.exports.LocalScope = require('./LocalScope');
 module.exports.ParamSlots = require('./ParamSlots');

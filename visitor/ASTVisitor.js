@@ -5,6 +5,8 @@ function ASTVisitor() {
 
 };
 
+ASTVisitor.errorMsg = 'ASTVisitor node type error';
+
 ASTVisitor.prototype = {
   visit: function(node) {
     // NOTE: keep the subClass above the supClass.
@@ -43,7 +45,7 @@ ASTVisitor.prototype = {
     else if (node instanceof ast.VariableNode) this.visitVariableNode(node);
     else if (node instanceof ast.IntegerLiteralNode) this.visitIntegerLiteralNode(node);
     else if (node instanceof ast.StringLiteralNode) this.visitStringLiteralNode(node);
-    else throw new Error('ASTVisitor node type error');
+    else throw new Error(ASTVisitor.errorMsg);
   },
 
   visitStmts(stmts) {

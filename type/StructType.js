@@ -1,5 +1,42 @@
+var $extend = require('../util/extend');
+var $import = require('../util/import');
+var CompositeType = require('./CompositeType');
 module.exports = StructType;
 
-function StructType() {
-
+$extend(StructType, CompositeType);
+function StructType(name, membs, loc) {
+  // String name, Slot[] membs, Location loc
+  StructType.super.call(this, name, membs, loc);
 };
+
+$import(StructType.prototype, {
+  isStruct: function() {
+    return true;
+  },
+
+  isSameType: function(other) {
+    if (! other.isStruct()) return false;
+    return this === other;
+  },
+
+  computeOffsets: function() {
+    var offset = 0;
+    var maxAlign = 1;
+    for (var s of this.members()) {
+      var offset = this.align(offset, s.allocSize());
+      s.setOffset(offset);
+      offset += s.allocSize();
+      maxAlign = Math.max(maxAlign, s.alignment());
+    }
+    this._cachedSize = this.align(offset, maxAlign);
+    this._cachedAlign = maxAlign;
+  },
+
+  align(n, alignment) {
+    return (n + alignment - 1) / alignment * alignment;
+  },
+
+  toString: function() {
+    return 'struct ' + this._name;
+  }
+});

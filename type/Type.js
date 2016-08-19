@@ -19,7 +19,7 @@ Type.prototype = {
     return this.allocSize();
   },
 
-  isSameType: function() {
+  isSameType: function(other) {
     throw new Error('Type abstract method call: isSameType');
   },
 

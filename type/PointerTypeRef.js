@@ -7,7 +7,7 @@ $extend(PointerTypeRef, TypeRef);
 function PointerTypeRef(baseType) {
   // TypeRef baseType
   PointerTypeRef.super.call(this, baseType.location());
-  this.baseType = baseType;
+  this._baseType = baseType;
 };
 
 $import(PointerTypeRef.prototype, {
@@ -16,16 +16,16 @@ $import(PointerTypeRef.prototype, {
   },
 
   baseType: function() {
-    return this.baseType;
+    return this._baseType;
   },
 
   equals: function(other) {
-    if (!other instanceof PointerTypeRef) return false;
-    return this.baseType.equals(other.baseType());
+    if (!(other instanceof PointerTypeRef)) return false;
+    return this._baseType.equals(other.baseType());
   },
 
   toString: function() {
-    return this.baseType.toString() + '*';
+    return this._baseType.toString() + '*';
   }
 });
 
