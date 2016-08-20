@@ -97,14 +97,42 @@ $import(UserType.prototype, {
   },
 
   isSameType: function(other) {
-      return this.realType().isSameType(other);
+    return this.realType().isSameType(other);
   },
 
   isCompatible: function(other) {
-      return this.realType().isCompatible(other);
+    return this.realType().isCompatible(other);
   },
 
   isCastableTo: function(other) {
-      return this.realType().isCastableTo(other);
+    return this.realType().isCastableTo(other);
+  },
+
+  getIntegerType: function() {
+    return this.realType().getIntegerType(); 
+  },
+
+  getCompositeType: function() {
+    return this.realType().getCompositeType(); 
+  },
+
+  getStructType: function() {
+    return this.realType().getStructType(); 
+  },
+
+  getUnionType: function() {
+    return this.realType().getUnionType(); 
+  },
+
+  getArrayType: function() {
+    return this.realType().getArrayType(); 
+  },
+
+  getPointerType: function() {
+    return this.realType().getPointerType(); 
+  },
+
+  getFunctionType: function() {
+    return this.realType().getFunctionType(); 
   }
 });

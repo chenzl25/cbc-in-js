@@ -33,6 +33,7 @@ $import(VariableNode.prototype, {
     if (!this._entity) {
       throw new Error('VariableNode non-entity');
     }
+    return this._entity;
   },
 
   setEntity: function(ent) {

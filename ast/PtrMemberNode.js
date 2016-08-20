@@ -12,11 +12,11 @@ function PtrMemberNode(expr, member) {
 
 $import(PtrMemberNode.prototype, {
   dereferedCompositeType: function() {
-    return this._expr().type().baseType();
+    return this._expr.type().getPointerType().baseType().getCompositeType();
   },
 
   dereferedType: function() {
-    return this._expr().type().baseType();
+    return this._expr.type().getPointerType().baseType();
   },
 
   expr: function() {
@@ -32,7 +32,7 @@ $import(PtrMemberNode.prototype, {
   },
 
   origType: function() {
-    return this.dereferedCompositeType().memberType(member);
+    return this.dereferedCompositeType().memberType(this._member);
   },
 
   location: function() {

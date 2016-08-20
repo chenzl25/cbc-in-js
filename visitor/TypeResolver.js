@@ -70,7 +70,7 @@ $import(TypeResolver.prototype, {
     if (ct == null) {
       this.error(def.location(), "cannot intern struct/union: " + def.name());
     }
-    for (var s of ct.members()) {
+    for (var s of ct.members()) { 
       this.bindType(s.typeNode());
     }
   },

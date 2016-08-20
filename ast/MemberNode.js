@@ -1,6 +1,7 @@
 var $extend = require('../util/extend');
 var $import = require('../util/import');
 var LHSNode = require('./LHSNode');
+var UserType = require('../type/UserType');
 module.exports = MemberNode;
 
 $extend(MemberNode, LHSNode);
@@ -12,7 +13,7 @@ function MemberNode(expr, member) {
 
 $import(MemberNode.prototype, {
   baseType: function() {
-    return thix._expr().type();
+    return this._expr.type().getCompositeType();
   },
 
   expr: function() {
@@ -24,15 +25,14 @@ $import(MemberNode.prototype, {
   },
 
   offset: function() {
-    return this.baseType().memberOffset(member);
+    return this.baseType().memberOffset(this._member);
   },
 
   origType: function() {
-    return this.baseType().memberType(member);
+    return this.baseType().memberType(this._member);
   },
 
   location: function() {
     return this._expr.location();
   }
-  // accept
 });

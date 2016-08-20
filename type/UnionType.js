@@ -16,7 +16,7 @@ $import(UnionType.prototype, {
 
   isSameType: function(other) {
     if (! other.isUnion()) return false;
-    return this === other;
+    return this === other.getUnionType();
   },
 
   computeOffsets: function() {

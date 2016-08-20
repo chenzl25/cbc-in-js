@@ -20,7 +20,7 @@ $import(FuncallNode.prototype, {
   },
 
   functionType: function() {
-    return this._expr.type().baseType();
+    return this._expr.type().getPointerType().baseType().getFunctionType();
   },
 
   numArgs: function() {

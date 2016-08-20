@@ -93,5 +93,33 @@ Type.prototype = {
 
   baseType: function() {
     throw new Error("#baseType called for undereferable type");
+  },
+
+  getIntegerType: function() {
+    return this; 
+  },
+
+  getPointerType: function() {
+    return this; 
+  },
+
+  getFunctionType: function() {
+    return this; 
+  },
+
+  getStructType: function() {
+    return this; 
+  },
+
+  getUnionType: function() {
+    return this; 
+  },
+
+  getCompositeType: function() {
+    return this; 
+  },
+
+  getArrayType: function() {
+    return this; 
   }
 }

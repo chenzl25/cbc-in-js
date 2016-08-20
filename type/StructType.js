@@ -16,7 +16,7 @@ $import(StructType.prototype, {
 
   isSameType: function(other) {
     if (! other.isStruct()) return false;
-    return this === other;
+    return this === other.getStructType(); // TO CHANGE
   },
 
   computeOffsets: function() {

@@ -14,11 +14,11 @@ $import(ExprNode.prototype, {
   },
 
   origType: function() {
-    // return this.type();
+    return this.type();
   },
 
   allocSize: function() { 
-    // return this.type().allocSize(); 
+    return this.type().allocSize(); 
   },
 
   isConstant: function() { 
@@ -43,12 +43,10 @@ $import(ExprNode.prototype, {
   },
 
   isCallable: function() {
-    // return this.type().isCallable();
+    return this.type().isCallable();
   },
 
   isPointer: function() {
-    // return type().isPointer();
+    return this.type().isPointer();
   },
-
-  // accept: function(visitor){}
 });

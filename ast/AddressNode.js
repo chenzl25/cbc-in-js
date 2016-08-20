@@ -16,7 +16,7 @@ $import(AddressNode.prototype, {
 
   type: function() {
     if (this._type == null) throw new Error('type is null');
-    return type;
+    return this._type;
   },
 
   /** Decides type of this node.

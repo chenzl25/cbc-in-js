@@ -59,6 +59,9 @@ Compiler.prototype = {
     localResolver.resolve(ast);
     var typeResolver = new visitor.TypeResolver(typeTable);
     typeResolver.resolve(ast);
+    typeTable.semanticCheck();
+    var DereferenceChecker = new visitor.DereferenceChecker(typeTable);
+    DereferenceChecker.check(ast);
   }
 }
 

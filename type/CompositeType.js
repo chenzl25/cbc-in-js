@@ -34,9 +34,10 @@ $import(CompositeType.prototype, {
   compareMemberTypes: function(other, cmpMethod) {
     if (this.isStruct() && !other.isStruct()) return false;
     if (this.isUnion() && !other.isUnion()) return false;
-    if (this._members.size() !== other.size()) return false;
+    var otherType = other.getCompositeType();
+    if (this._members.size() !== otherType.size()) return false;
     for (var i = 0; i < this._members.size(); i++) {
-      if (! this.compareTypesBy(cmpMethod, this._members[i], other._members[i])) 
+      if (! this.compareTypesBy(cmpMethod, this._members[i], otherType._members[i])) 
         return false;
     }
     return true;
@@ -106,7 +107,7 @@ $import(CompositeType.prototype, {
         return s;
       }
     }
-    return s;
+    return null;
   }
 });
 

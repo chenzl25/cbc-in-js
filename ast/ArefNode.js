@@ -25,7 +25,7 @@ $import(ArefNode.prototype, {
   },
 
   baseExpr: function() {
-    return this.isMultiDimension() ? this._expr.baseExpr() : expr;
+    return this.isMultiDimension() ? this._expr.baseExpr() : this._expr;
   },
 
   elementSize: function() {

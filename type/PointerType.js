@@ -23,7 +23,7 @@ $import(PointerType.prototype, {
   },
 
   isCallable: function() {
-    return baseType.isFunction(); 
+    return this._baseType.isFunction(); 
   },
 
   size: function() {
@@ -36,7 +36,7 @@ $import(PointerType.prototype, {
 
   equals: function(other) {
     if (! (other instanceof PointerType)) return false;
-    return this._baseType.equals(other.baseType());
+    return this._baseType.equals(other.getPointerType().baseType());
   },
 
   /**

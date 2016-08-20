@@ -40,25 +40,33 @@ TypeTable.newTable = function(charsize, shortsize, intsize, longsize, ptrsize) {
 }
 
 TypeTable.prototype = {
-  isDefined: function(ref) {
-    return this._table.has(ref);
+  getByEquals: function(ref) {
+    for (var key of this._table.keys()) {
+      if (ref.equals(key)) {
+        return this._table.get(key);
+      }
+    }
+    return undefined;
+  },
+
+  hasByEquals: function(ref) {
+    for (var key of this._table.keys()) {
+      if (ref.equals(key)) {
+        return true;
+      }
+    }
+    return false;
   },
 
   put: function(ref, t) {
-    if (this._table.has(ref)) {
+    if (this.hasByEquals(ref)) {
       this.error(null, "duplicated type definition: " + ref);
     }
     this._table.set(ref, t);
   },
 
   get: function(ref) {
-    var tt = null;
-    // can improve
-    for (var key of this._table.keys()) {
-      if (ref.equals(key)) {
-        tt = this._table.get(key);
-      }
-    }
+    var tt = this.getByEquals(ref);
     if (tt == null) {
       if (ref instanceof type.UserTypeRef) {
         // If unregistered UserType is used in program, it causes
@@ -84,6 +92,10 @@ TypeTable.prototype = {
       this.error(null, "unregistered type: " + ref.toString());
     }
     return tt;
+  },
+
+  isDefined: function(ref) {
+    return this.hasByEquals(ref);
   },
 
   // array is really a pointer on parameters.
@@ -137,7 +149,7 @@ TypeTable.prototype = {
    */
 
   types: function() {
-    return Array.from(this._table);
+    return this._table.values();
   },
 
   VoidType: function voidType() {
@@ -185,14 +197,13 @@ TypeTable.prototype = {
       // We can safely use "instanceof" instead of isXXXX() here,
       // because the type refered from UserType must be also
       // kept in this table.
-      if (t instanceof CompositeType) {
-        this.checkCompositeVoidMembers(t, h);
-        this.checkDuplicatedMembers(t, h);
+      if (t instanceof type.CompositeType) {
+        this.checkCompositeVoidMembers(t);
+        this.checkDuplicatedMembers(t);
+      } else if (t instanceof type.ArrayType) {
+        this.checkArrayVoidMembers(t);
       }
-      else if (t instanceof ArrayType) {
-        this.checkArrayVoidMembers(t, h);
-      }
-      this.checkRecursiveDefinition(t, h);
+      this.checkRecursiveDefinition(t);
     }
   },
 
@@ -219,7 +230,7 @@ TypeTable.prototype = {
       if (seen.has(s.name())) {
         this.error(t.location(), t.toString() + " has duplicated member: " + s.name())
       }
-      seen.add(s.name);
+      seen.add(s.name());
     }
   },
 
@@ -234,23 +245,27 @@ TypeTable.prototype = {
     } else if (marks.get(t) === this._checked) {
       return;
     } else {
-      marks.set(t, checking);
-      if (t instanceof CompositeType) {
-        for (var s of ct.members()) {
+      marks.set(t, this._checking);
+      if (t instanceof type.CompositeType) {
+        for (var s of t.members()) {
           this._checkRecursiveDefinition(s.type(), marks);
         }
-      } else if (t instanceof ArrayType) {
+      } else if (t instanceof type.ArrayType) {
         this._checkRecursiveDefinition(t.baseType(), marks);
-      } else if (t instanceof UserType) {
+      } else if (t instanceof type.UserType) {
         this._checkRecursiveDefinition(t.realType(), marks);
       }
-      marks.set(t, checked);
+      marks.set(t, this._checked);
     }
   },
 
   error: function(location, msg) {
     if (location === null) {
-      throw new Error(msg);
+      ErrorHandler.error('semantic error',
+                         null,
+                         null,
+                         null,
+                         msg);
     } else {
       ErrorHandler.error('semantic error',
                          location.fileName(),

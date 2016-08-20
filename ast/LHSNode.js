@@ -5,16 +5,16 @@ module.exports = LHSNode;
 
 $extend(LHSNode, ExprNode);
 function LHSNode() {
-  this.type; // Type 
+  this._type; // Type 
 };
 
 $import(LHSNode.prototype, {
   type: function() {
-    return this.type? type : this.origType();
+    return this._type? this._type : this.origType();
   },
 
   setType: function(t) {
-    this.type = t;
+    this._type = t;
   },
 
   // Type
@@ -23,7 +23,7 @@ $import(LHSNode.prototype, {
   },
 
   allocSize: function() {
-    // this.origType().allocSize();
+    this.origType().allocSize();
   },
 
   isLvalue: function() { 
@@ -35,7 +35,7 @@ $import(LHSNode.prototype, {
   },
 
   isLoadable: function() {
-    var t = origType();
+    var t = this.origType();
     return !t.isArray() && !t.isFunction();
   }
 });

@@ -44,7 +44,7 @@ Entity.prototype = {
   },
 
   type: function() {
-    return this.typeNode.type();
+    return this._typeNode.type();
   },
 
   allocSize: function() {

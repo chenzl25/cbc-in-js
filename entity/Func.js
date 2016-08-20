@@ -30,7 +30,7 @@ $import(Func.prototype, {
   },
 
   returnType: function() {
-    return this.type().returnType();
+    return this.type().getFunctionType().returnType();
   },
 
   isVoid: function() {
