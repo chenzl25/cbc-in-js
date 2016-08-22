@@ -7,7 +7,7 @@ $extend(FunctionType, Type);
 function FunctionType(ret, partypes) {
   // Type ret, ParamTypes partypes
   this._returnType = ret;
-  this._partypes = partypes;
+  this._paramTypes = partypes;
 };
 
 $import(FunctionType.prototype, {
@@ -26,8 +26,8 @@ $import(FunctionType.prototype, {
   isSameType: function(other) {
     if (! other.isFunction()) return false;
     var t = other.getFunctionType();
-    return t.returnType.isSameType(this._returnType)
-        && t.paramTypes.isSameType(this._paramTypes);
+    return t._returnType.isSameType(this._returnType)
+        && t._paramTypes.isSameType(this._paramTypes);
   },
 
   /**
@@ -37,8 +37,8 @@ $import(FunctionType.prototype, {
   isCompatible: function(target) {
     if (! target.isFunction()) return false;
     var t = target.getFunctionType();
-    return t.returnType.isCompatible(this._returnType)
-        && t.paramTypes.isSameType(this._paramTypes);
+    return t._returnType.isCompatible(this._returnType)
+        && t._paramTypes.isSameType(this._paramTypes);
   },
 
   /**

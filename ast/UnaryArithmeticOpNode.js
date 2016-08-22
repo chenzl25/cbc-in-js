@@ -20,6 +20,6 @@ $import(UnaryArithmeticOpNode.prototype, {
   },
 
   setAmount: function(amount) {
-    this._amount = amout;
+    this._amount = amount;
   }
 })

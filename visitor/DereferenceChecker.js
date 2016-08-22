@@ -22,9 +22,15 @@ $import(DereferenceChecker.prototype, {
         this.visit(f.body());
       }
     } catch (err) {
-      // some err cause by the errors unhandled before
+      if (!this._errorHandler.hasError()) {
+        // bug will come here
+        console.log('DereferenceChecker bug!')
+        console.log(err);
+        console.log(err.stack)
+      }
     } finally {
       if (this._errorHandler.hasError()) {
+        // some err cause by the errors unhandled before
         this._errorHandler.throw();
       }
     }

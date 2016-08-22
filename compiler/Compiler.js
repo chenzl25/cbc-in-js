@@ -62,6 +62,8 @@ Compiler.prototype = {
     typeTable.semanticCheck();
     var DereferenceChecker = new visitor.DereferenceChecker(typeTable);
     DereferenceChecker.check(ast);
+    var typeChecker = new visitor.TypeChecker(typeTable);
+    typeChecker.check(ast);
   }
 }
 

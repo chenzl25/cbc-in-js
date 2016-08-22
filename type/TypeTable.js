@@ -153,39 +153,39 @@ TypeTable.prototype = {
   },
 
   VoidType: function voidType() {
-    return this._table.get(new type.VoidTypeRef());
+    return this.get(new type.VoidTypeRef());
   },
 
   signedChar: function() {
-    return this._table.get(type.IntegerTypeRef.charRef());
+    return this.get(type.IntegerTypeRef.charRef());
   },
 
   signedShort: function() {
-    return this._table.get(type.IntegerTypeRef.shortRef());
+    return this.get(type.IntegerTypeRef.shortRef());
   },
 
   signedInt: function() {
-    return this._table.get(type.IntegerTypeRef.intRef());
+    return this.get(type.IntegerTypeRef.intRef());
   },
 
   signedLong: function() {
-    return this._table.get(type.IntegerTypeRef.longRef());
+    return this.get(type.IntegerTypeRef.longRef());
   },
 
   unsignedChar: function() {
-    return this._table.get(type.IntegerTypeRef.ucharRef());
+    return this.get(type.IntegerTypeRef.ucharRef());
   },
 
   unsignedShort: function() {
-    return this._table.get(type.IntegerTypeRef.ushortRef());
+    return this.get(type.IntegerTypeRef.ushortRef());
   },
 
   unsignedInt: function() {
-    return this._table.get(type.IntegerTypeRef.uintRef());
+    return this.get(type.IntegerTypeRef.uintRef());
   },
 
   unsignedLong: function() {
-    return this._table.get(type.IntegerTypeRef.ulongRef());
+    return this.get(type.IntegerTypeRef.ulongRef());
   },
 
   pointerTo: function(baseType) {

@@ -24,7 +24,7 @@ $import(FuncallNode.prototype, {
   },
 
   numArgs: function() {
-   return this._args.size();
+   return this._args.length;
   },
 
   args: function() {

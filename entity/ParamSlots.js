@@ -16,11 +16,11 @@ function ParamSlots(loc, paramDescs, vararg) {
 ParamSlots.prototype = {
   argc: function() {
     if (this._vararg) throw new Error("must not happen: Param#argc for vararg");
-    return this._paramDescriptors.size();
+    return this._paramDescriptors.length;
   },
 
   minArgc: function() {
-    return this._paramDescriptors.size();
+    return this._paramDescriptors.length;
   },
 
   acceptVarargs: function() {
