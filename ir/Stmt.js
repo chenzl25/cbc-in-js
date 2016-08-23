@@ -8,7 +8,6 @@ function Stmt(loc) {
 Stmt.prototype = {
   location: function() {
     return this._location;
-  },
-  // accept
+  }
 }
 
