@@ -11,9 +11,9 @@ DeclarationVisitor.errorMsg = 'DeclarationVisitor node type error';
 
 DeclarationVisitor.prototype = {
   visit: function(node) {
-    if (node instanceof StructNode) this.visitStructNode(node);
-    else if (node instanceof UnionNode) this.visitUnionNode(node);
-    else if (node instanceof TypedefNode) this.visitTypedefNode(node);
+    if (node instanceof StructNode) return this.visitStructNode(node);
+    else if (node instanceof UnionNode) return this.visitUnionNode(node);
+    else if (node instanceof TypedefNode) return this.visitTypedefNode(node);
     else throw new Error(DeclarationVisitor.errorMsg);
   },
 

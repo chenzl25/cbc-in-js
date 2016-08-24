@@ -36,51 +36,51 @@ Op.U_CAST = 'U_CAST';
 
 Op.internBinary = function(op, isSigned) {
   // String op, boolean isSigned
-  if (op.equals("+")) {
+  if (op === "+") {
     return Op.ADD;
-  } else if (op.equals("-")) {
+  } else if (op === "-") {
     return Op.SUB;
-  } else if (op.equals("*")) {
+  } else if (op === "*") {
     return Op.MUL;
-  } else if (op.equals("/")) {
+  } else if (op === "/") {
     return isSigned ? Op.S_DIV : Op.U_DIV;
-  } else if (op.equals("%")) {
+  } else if (op === "%") {
     return isSigned ? Op.S_MOD : Op.U_MOD;
-  } else if (op.equals("&")) {
+  } else if (op === "&") {
     return Op.BIT_AND;
-  } else if (op.equals("|")) {
+  } else if (op === "|") {
     return Op.BIT_OR;
-  } else if (op.equals("^")) {
+  } else if (op === "^") {
     return Op.BIT_XOR;
-  } else if (op.equals("<<")) {
+  } else if (op === "<<") {
     return Op.BIT_LSHIFT;
-  } else if (op.equals(">>")) {
+  } else if (op === ">>") {
     return isSigned ? Op.ARITH_RSHIFT : Op.BIT_RSHIFT;
-  } else if (op.equals("==")) {
+  } else if (op === "==") {
     return Op.EQ;
-  } else if (op.equals("!=")) {
+  } else if (op === "!=") {
     return Op.NEQ;
-  } else if (op.equals("<")) {
+  } else if (op === "<") {
     return isSigned ? Op.S_LT : Op.U_LT;
-  } else if (op.equals("<=")) {
+  } else if (op === "<=") {
     return isSigned ? Op.S_LTEQ : Op.U_LTEQ;
-  } else if (op.equals(">")) {
+  } else if (op === ">") {
     return isSigned ? Op.S_GT : Op.U_GT;
-  } else if (op.equals(">=")) {
+  } else if (op === ">=") {
     return isSigned ? Op.S_GTEQ : Op.U_GTEQ;
   } else {
     throw new Error("unknown binary op: " + op);
   }
 }
 
-Op.internBinary = function(op, isSigned) {
-  if (op.equals("+")) {
+Op.internUnary = function(op, isSigned) {
+  if (op === "+") {
     throw new Error("unary+ should not be in IR");
-  } else if (op.equals("-")) {
+  } else if (op === "-") {
     return Op.UMINUS;
-  } else if (op.equals("~")) {
+  } else if (op === "~") {
     return Op.BIT_NOT;
-  } else if (op.equals("!")) {
+  } else if (op === "!") {
     return Op.NOT;
   } else {
     throw new Error("unknown unary op: " + op);

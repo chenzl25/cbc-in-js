@@ -41,7 +41,8 @@ Compiler.prototype = {
         var typeTable = TypeTable.ilp32();
         this.semanticAnalyze(obj.ast, typeTable);
         // TODO
-        obj.ir;
+        var irGenerator = new visitor.IRGenerator(typeTable);
+        obj.ir = irGenerator.generate(obj.ast);
         obj.asm;
         filesResult.push(obj);
       } catch (err) {

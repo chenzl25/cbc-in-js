@@ -6,6 +6,7 @@ module.exports = IntegerLiteralNode;
 
 $extend(IntegerLiteralNode, LiteralNode);
 function IntegerLiteralNode(loc, ref, value) {
+  // Location loc, TypeRef ref, Number value
   IntegerLiteralNode.super.call(this, loc, ref);
   this._value = value;
 };
