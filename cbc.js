@@ -2,9 +2,11 @@ var fs = require('fs');
 var path = require('path');
 var compile = require('./compiler/Compiler');
 var ASTPrinter = require('./visitor/ASTPrinter');
+var IRPrinter = require('./visitor/IRPrinter');
 var cmdParse = require('./util/cmdParser');
 
 var astPrinter = new ASTPrinter();
+var irPrinter = new IRPrinter();
 var argv = cmdParse(process.argv);
 
 
@@ -33,7 +35,7 @@ filesResult.forEach(function(obj) {
     astPrinter.print(obj.ast);
   }
   if (argv.isDumpIR) {
-
+    irPrinter.print(obj.ir);
   }
   if (argv.isDumpASM) {
 

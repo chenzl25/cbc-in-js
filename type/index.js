@@ -21,4 +21,3 @@ module.exports.UserType = require('./UserType');
 module.exports.UserTypeRef = require('./UserTypeRef');
 module.exports.VoidType = require('./VoidType');
 module.exports.VoidTypeRef = require('./VoidTypeRef');
-module.exports.index = require('./index');

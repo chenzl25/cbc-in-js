@@ -16,19 +16,18 @@ function ForNode(loc, init, cond, incr, body) {
 
 $import(ForNode.prototype, {
   init: function() {
-    return   this._init;
+    return this._init;
   },
 
   cond: function() {
-    return   this._cond;
+    return this._cond;
   },
 
   incr: function() {
-    return   this._incr;
+    return this._incr;
   },
 
   body: function() {
-    return   this._body;
-  },
-  // accept
+    return this._body;
+  }
 });

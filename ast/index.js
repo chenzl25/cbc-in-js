@@ -49,4 +49,3 @@ module.exports.UnaryOpNode = require('./UnaryOpNode');
 module.exports.UnionNode = require('./UnionNode');
 module.exports.VariableNode = require('./VariableNode');
 module.exports.WhileNode = require('./WhileNode');
-module.exports.index = require('./index');

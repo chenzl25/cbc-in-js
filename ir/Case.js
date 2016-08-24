@@ -5,3 +5,13 @@ function Case(value, label) {
   this._value = value;
   this._label = label;
 };
+
+Case.prototype = {
+  value: function() {
+    return this._value;
+  },
+
+  label: function() {
+    return this._label;
+  }
+}

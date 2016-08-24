@@ -21,4 +21,3 @@ module.exports.Symbol = require('./Symbol');
 module.exports.SymbolTable = require('./SymbolTable');
 module.exports.Type = require('./Type');
 module.exports.UnnamedSymbol = require('./UnnamedSymbol');
-module.exports.index = require('./index');

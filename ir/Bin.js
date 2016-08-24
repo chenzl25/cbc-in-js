@@ -20,5 +20,9 @@ $import(Bin.prototype, {
   right: function() {
     return this._right;
   },
+
+  op: function() {
+    return this._op;
+  }
 });
 

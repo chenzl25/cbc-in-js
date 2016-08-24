@@ -436,7 +436,7 @@ $import(IRGenerator.prototype, {
                                   this.imm(t, 1)));
   },
 
-  visitPrefixOpNode: function(node) {
+  visitSuffixOpNode: function(node) {
     var expr = this.transformExpr(node.expr());
     var t    = node.expr().type();
     var op   = this.binOp(node.operator());
@@ -599,7 +599,7 @@ $import(IRGenerator.prototype, {
 
   visitDereferenceNode: function(node) {
     var addr = this.transformExpr(node.expr());
-    return node.isLoadable() ? this.mem(addr, node.type) : addr;
+    return node.isLoadable() ? this.mem(addr, node.type()) : addr;
   },
 
   visitAddressNode: function(node) {
@@ -703,7 +703,7 @@ $import(IRGenerator.prototype, {
       // mem(ent) -> (Mem (Var ent))
       // Entity ent
       var ent  = _1;
-      return new ir.Mem(this.asmType(ent.type()).baseType(), this.ref(ent));
+      return new ir.Mem(this.asmType(ent.type().baseType()), this.ref(ent));
     }
   },
 

@@ -6,7 +6,7 @@ module.exports = ExprStmt;
 $extend(ExprStmt, Stmt);
 function ExprStmt(loc, expr) {
   // Location loc, Expr expr
-  ExprStmt.super.call(loc);
+  ExprStmt.super.call(this, loc);
   this._expr = expr;
 };
 

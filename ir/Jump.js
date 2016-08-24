@@ -6,7 +6,7 @@ module.exports = Jump;
 $extend(Jump, Stmt);
 function Jump(loc, label) {
   // Location loc, Label label
-  Jump.super.call(loc);
+  Jump.super.call(this, loc);
   this._label = label;
 };
 

@@ -48,7 +48,7 @@ Compiler.prototype = {
       } catch (err) {
         console.log(file.options.fileName)
         console.log(err);
-        // console.log(err.stack)
+        console.log(err.stack)
         console.log('')
       }
     }

@@ -75,5 +75,25 @@ $import(FunctionType.prototype, {
 
   size: function() {
     throw new Error("FunctionType#size called");
+  },
+
+  toString: function() {
+    var str = this._returnType.toString() + ' (';
+    var paramsTypes = this._paramTypes;
+    for (var i = 0; i < paramsTypes.length; i++) {
+      ref = paramsTypes[i];
+      str += ref.toString();
+      if (i !== paramsTypes.length-1) {
+        str += ', ';
+      }
+    }
+    if (paramsTypes.length === 0) {
+      str += 'void';
+    }
+    if (this.isVararg()) {
+      str += ', ...';
+    }
+    str += ')';
+    return str;
   }
 });

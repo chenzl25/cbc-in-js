@@ -22,11 +22,24 @@ IRVisitor.prototype = {
     else if (node instanceof ir.Addr) return this.visitAddr(node);
     else if (node instanceof ir.Mem) return this.visitMem(node);
     else if (node instanceof ir.Var) return this.visitVar(node);
+    else if (node instanceof ir.Case) return this.visitCast(node);
     else if (node instanceof ir.Int) return this.visitInt(node);
     else if (node instanceof ir.Str) return this.visitStr(node);
     else throw new Error(IRVisitor.errorMsg);
   },
   
+  visitStmts(stmts) {
+    for (var s of stmts) {
+      this.visit(s);
+    }
+  },
+  
+  visitExprs(exprs) {
+    for (var e of exprs) {
+      this.visit(e);
+    }
+  },
+
   //
   // Stmt
   //
@@ -87,12 +100,15 @@ IRVisitor.prototype = {
 
   },
 
+  visitCast: function(node) {
+    
+  },
+
   visitInt: function(node) {
 
   },
 
   visitStr: function(node) {
 
-  },
-
+  }
 }

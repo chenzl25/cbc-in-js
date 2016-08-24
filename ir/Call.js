@@ -7,7 +7,7 @@ module.exports = Call;
 $extend(Call, Expr);
 function Call(type, expr, args) {
   // Type type, Expr expr, Expr[] args
-  Call.super.call(type);
+  Call.super.call(this, type);
   this._expr = expr;
   this._args = args;
 };

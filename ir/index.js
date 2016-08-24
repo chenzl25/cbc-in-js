@@ -18,4 +18,3 @@ module.exports.Str = require('./Str');
 module.exports.Switch = require('./Switch');
 module.exports.Uni = require('./Uni');
 module.exports.Var = require('./Var');
-module.exports.index = require('./index');
