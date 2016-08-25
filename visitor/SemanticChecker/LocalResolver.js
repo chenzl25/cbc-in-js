@@ -1,10 +1,10 @@
-var $extend = require('../util/extend');
-var $import = require('../util/import');
-var ErrorHandler = require('../util/ErrorHandler');
-var ASTVisitor = require('./ASTVisitor');
-var ConstantTable = require('../entity/ConstantTable');
-var ToplevelScope = require('../entity/ToplevelScope');
-var LocalScope = require('../entity/LocalScope');
+var $extend = require('../../util/extend');
+var $import = require('../../util/import');
+var ASTVisitor = require('../AbstractVisitor/ASTVisitor');
+var ErrorHandler = require('../../util/ErrorHandler');
+var ConstantTable = require('../../entity/ConstantTable');
+var ToplevelScope = require('../../entity/ToplevelScope');
+var LocalScope = require('../../entity/LocalScope');
 module.exports = LocalResolver;
 
 $extend(LocalResolver, ASTVisitor);

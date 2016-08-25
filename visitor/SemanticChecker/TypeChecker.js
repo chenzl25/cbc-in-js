@@ -1,9 +1,9 @@
-var $extend = require('../util/extend');
-var $import = require('../util/import');
-var ASTVisitor = require('./ASTVisitor');
-var ErrorHandler = require('../util/ErrorHandler');
-var CastNode = require('../ast/CastNode');
-var IntegerLiteralNode = require('../ast/IntegerLiteralNode');
+var $extend = require('../../util/extend');
+var $import = require('../../util/import');
+var ASTVisitor = require('../AbstractVisitor/ASTVisitor');
+var ErrorHandler = require('../../util/ErrorHandler');
+var CastNode = require('../../ast/CastNode');
+var IntegerLiteralNode = require('../../ast/IntegerLiteralNode');
 module.exports = TypeChecker;
 
 $extend(TypeChecker, ASTVisitor);
@@ -239,8 +239,7 @@ $import(TypeChecker.prototype, {
     TypeChecker.super.prototype.visitBinaryOpNode.call(this, node);
     if (node.operator() === '+' || node.operator() === '-') {
       this.expectsSameIntegerOrPointerDiff(node);
-    }
-    else if (node.operator() === '*'
+    } else if (node.operator() === '*'
             || node.operator() === '/'
             || node.operator() === '%'
             || node.operator() === '&'
@@ -293,14 +292,12 @@ $import(TypeChecker.prototype, {
         return;
       }
       node.setType(this._typeTable.ptrDiffType());
-    }
-    else if (node.left().isPointer()) {
+    } else if (node.left().isPointer()) {
       this.mustBeInteger(node.right(), node.operator());
       // promote integer for pointer calculation
       node.setRight(this.integralPromotedExpr(node.right()));
       node.setType(node.left().type());
-    }
-    else if (node.right().isPointer()) {
+    } else if (node.right().isPointer()) {
       if (node.operator() === '-') {
         this.error(node, "invalid operation: integer - pointer");
         return;
@@ -309,8 +306,7 @@ $import(TypeChecker.prototype, {
       // promote integer for pointer calculation
       node.setLeft(this.integralPromotedExpr(node.left()));
       node.setType(node.right().type());
-    }
-    else {
+    } else {
       this.expectsSameInteger(node);
     }
   },
@@ -461,7 +457,6 @@ $import(TypeChecker.prototype, {
     if (args.length > paramTypes.length) {
       for (var i = paramTypes.length; i < args.length; i++) {
         newArgs.push(this.checkRHS(args[i]) ? this.castOptionalArg(args[i]) : args[i]);
-        
       }
     }
     node.replaceArgs(newArgs);

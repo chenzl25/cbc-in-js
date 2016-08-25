@@ -17,6 +17,7 @@ Type.get = function(size) {
     case 8:
       return 'INT64';
     default:
+      console.log(size)
       throw new Error("unsupported asm type size: " + size)
   }
 }

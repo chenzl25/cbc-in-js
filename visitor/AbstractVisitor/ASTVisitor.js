@@ -1,4 +1,4 @@
-var ast = require('../ast/index');
+var ast = require('../../ast/index');
 module.exports = ASTVisitor;
 
 function ASTVisitor() {

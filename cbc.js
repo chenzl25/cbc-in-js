@@ -1,8 +1,9 @@
 var fs = require('fs');
 var path = require('path');
 var compile = require('./compiler/Compiler');
-var ASTPrinter = require('./visitor/ASTPrinter');
-var IRPrinter = require('./visitor/IRPrinter');
+var visitor = require('./visitor/index');
+var ASTPrinter = visitor.ASTPrinter;
+var IRPrinter = visitor.IRPrinter;
 var cmdParse = require('./util/cmdParser');
 
 var astPrinter = new ASTPrinter();

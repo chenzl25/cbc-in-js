@@ -30,17 +30,17 @@ main(int argc, char **argv)
     static struct t1 c;
 
     a.x.x.x.x.x = 701;
-    printf("%d", a.x.x.x.x.x);
+    // printf("%d", a.x.x.x.x.x);
 
-    b.x.x.x.x.x = 702;
-    printf(";%d", b.x.x.x.x.x);
+    // b.x.x.x.x.x = 702;
+    // printf(";%d", b.x.x.x.x.x);
 
-    c.x.x.x.x.x = 703;
-    printf(";%d", c.x.x.x.x.x);
+    // c.x.x.x.x.x = 703;
+    // printf(";%d", c.x.x.x.x.x);
 
-    d.x.x.x.x.x = 704;
-    printf(";%d", d.x.x.x.x.x);
+    // d.x.x.x.x.x = 704;
+    // printf(";%d", d.x.x.x.x.x);
 
-    puts("");
-    return 0;
+    // puts("");
+    // return 0;
 }

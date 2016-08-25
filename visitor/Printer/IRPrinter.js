@@ -1,6 +1,6 @@
-var $extend = require('../util/extend');
-var $import = require('../util/import');
-var IRVisitor = require('./IRVisitor');
+var $extend = require('../../util/extend');
+var $import = require('../../util/import');
+var IRVisitor = require('../AbstractVisitor/IRVisitor');
 module.exports = IRPrinter;
 
 $extend(IRPrinter, IRVisitor);
@@ -171,7 +171,12 @@ $import(IRPrinter.prototype, {
   //
   
   visitUni: function(node) {
-
+    this.tag('Uni');
+    this.pair('type', node.type());
+    this.pair('op', node.op());
+    this.in();
+    this.visit(node.expr());
+    this.out();
   },
 
   visitBin: function(node) {
@@ -222,7 +227,7 @@ $import(IRPrinter.prototype, {
     this.pair('entity', node.entity().name());
   },
 
-  visitCast: function(node) {
+  visitCase: function(node) {
     this.tag('Case');
     this.pair('value', node.value());
     this.pair('label', node.label());

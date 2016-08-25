@@ -15,6 +15,7 @@ function VariableNode(_1, _2) {
     // Entity _1
     this._entity = _1;
     this._name = this._entity.name();
+    // fix the bug like : const int a = 1; ... a = 2;
   } else {
     throw new Error('VariableNode constructor parameter type error');
   }
@@ -39,6 +40,23 @@ $import(VariableNode.prototype, {
   setEntity: function(ent) {
     this._entity = ent;
   },
+  /*==============================================
+  =            fix constant entity bug            =
+  ==============================================*/
+  isLvalue: function() { 
+    if (this._entity.isConstant()) {
+        return false;
+    }
+    return true; 
+  },
+
+  isAssignable: function() { 
+    if (this._entity.isConstant()) {
+        return false;
+    }
+    return this.isLoadable(); 
+  },
+  /*=====  End of fix constant entity bug  ======*/
 
   typeNode: function() {
     return this.entity().typeNode();

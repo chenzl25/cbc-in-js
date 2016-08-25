@@ -1,6 +1,6 @@
 var fs = require('fs');
 var compile = require('./compiler/Compiler');
-var ASTPrinter = require("./visitor/ASTPrinter");
+var ASTPrinter = require("./visitor/index").ASTPrinter;
 
 var printer = new ASTPrinter();
 var files = fs.readdirSync('./test');

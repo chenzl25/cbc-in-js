@@ -30,15 +30,15 @@ $import(Slot.prototype, {
   },
 
   size: function() {
-    return this._typeNode.size();
+    return this.type().size();
   },
 
   allocSize: function() {
-    return this._typeNode.allocSize();
+    return this.type().allocSize();
   },
 
   alignment: function() {
-    return this._typeNode.alignment();    
+    return this.type().alignment();    
   },
 
   offset: function() {

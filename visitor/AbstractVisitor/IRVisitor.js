@@ -1,4 +1,4 @@
-var ir = require('../ir/index');
+var ir = require('../../ir/index');
 module.exports = IRVisitor;
 
 function IRVisitor() {
@@ -45,15 +45,16 @@ IRVisitor.prototype = {
   //
 
   visitExprStmt: function(node) {
-
+    this.visit(node.expr());
   },
 
   visitAssign: function(node) {
-
+    this.visit(node.lhs());
+    this.visit(node.rhs());
   },
 
   visitCJump: function(node) {
-
+    this.visit(node.cond());
   },
 
   visitJump: function(node) {
@@ -61,7 +62,7 @@ IRVisitor.prototype = {
   },
 
   visitSwitch: function(node) {
-
+    this.visit(node.cond());
   },
 
   visitLabelStmt: function(node) {
@@ -69,7 +70,9 @@ IRVisitor.prototype = {
   },
 
   visitReturn: function(node) {
-
+    if (node.expr()) {
+      this.visit(node.expr());
+    }
   },
 
   //
@@ -77,31 +80,33 @@ IRVisitor.prototype = {
   //
   
   visitUni: function(node) {
-
+    this.visit(node.expr());
   },
 
   visitBin: function(node) {
-
+    this.visit(node.left());
+    this.visit(node.right());
   },
 
   visitCall: function(node) {
-
+    this.visit(node.expr());
+    this.visitExprs(node.args());
   },
 
   visitAddr: function(node) {
-
+    this.visit(node.expr());
   },
 
   visitMem: function(node) {
-
+    this.visit(node.expr());
   },
 
   visitVar: function(node) {
 
   },
 
-  visitCast: function(node) {
-    
+  visitCase: function(node) {
+
   },
 
   visitInt: function(node) {

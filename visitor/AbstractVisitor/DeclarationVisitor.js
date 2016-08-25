@@ -1,6 +1,6 @@
-var StructNode = require('../ast/StructNode');
-var UnionNode = require('../ast/UnionNode');
-var TypedefNode = require('../ast/TypedefNode');
+var StructNode = require('../../ast/StructNode');
+var UnionNode = require('../../ast/UnionNode');
+var TypedefNode = require('../../ast/TypedefNode');
 module.exports = DeclarationVisitor;
 
 function DeclarationVisitor() {

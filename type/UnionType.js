@@ -32,7 +32,7 @@ $import(UnionType.prototype, {
   },
 
   align(n, alignment) {
-    return (n + alignment - 1) / alignment * alignment;
+    return Math.floor((n + alignment - 1) / alignment) * alignment;
   },
 
   toString: function() {

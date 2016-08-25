@@ -1,10 +1,10 @@
-var $extend = require('../util/extend');
-var $import = require('../util/import');
-var ASTVisitor = require('./ASTVisitor');
-var ErrorHandler = require('../util/ErrorHandler');
-var ir = require('../ir/index');
-var Label = require('../asm/Label');
-var asm = require('../asm/index');
+var $extend = require('../../util/extend');
+var $import = require('../../util/import');
+var ASTVisitor = require('../AbstractVisitor/ASTVisitor');
+var ErrorHandler = require('../../util/ErrorHandler');
+var ir = require('../../ir/index');
+var Label = require('../../asm/Label');
+var asm = require('../../asm/index');
 module.exports = IRGenerator;
 
 $extend(IRGenerator, ASTVisitor);
@@ -431,9 +431,9 @@ $import(IRGenerator.prototype, {
   visitPrefixOpNode: function(node) {
     var t = node.expr().type();
     return this.transformOpAssign(node.location(),
-                                  this.binOp(node.operator(), t,
+                                  this.binOp(node.operator()), t,
                                   this.transformExpr(node.expr()),
-                                  this.imm(t, 1)));
+                                  this.imm(t, 1));
   },
 
   visitSuffixOpNode: function(node) {
@@ -471,7 +471,7 @@ $import(IRGenerator.prototype, {
     } else {
       // cont(lhs += rhs) -> a = &lhs; *a = *a + rhs; cont(*a)
       var a = this.tmpVar(this.pointerTo(lhsType));
-      this.assign(loc, a, this.addressOf(lhs));
+      this.assign(loc, this.ref(a), this.addressOf(lhs));
       this.assign(loc, this.mem(a), this.bin(loc, lhsType, this.mem(a), rhs));
       return this.isStatement() ? null : this.mem(a);
     }
@@ -577,7 +577,7 @@ $import(IRGenerator.prototype, {
                         this.transformExpr(node.index()),
                         new ir.Bin(this.int_t(), ir.Op.MUL,
                                    this.transformIndex(node.expr()),
-                                   new ir.Inr(node.length())));
+                                   new ir.Int(node.length())));
     } else {
       return this.transformExpr(node.index());
     }
@@ -697,7 +697,7 @@ $import(IRGenerator.prototype, {
       // mem(expr) -> (Mem expr)
       // Expr expr, Type t
       var expr = _1;
-      var t    = _2;   
+      var t    = _2;
       return new ir.Mem(this.asmType(t), expr);
     } else {
       // mem(ent) -> (Mem (Var ent))

@@ -7,7 +7,7 @@ module.exports = Int;
 
 $extend(Int, Expr);
 function Int(type, value) {
-  // Type type, long value
+  // Type type, Number value
   Int.super.call(this, type);
   this._value = value;
 };

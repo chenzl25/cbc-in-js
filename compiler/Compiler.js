@@ -43,12 +43,13 @@ Compiler.prototype = {
         // TODO
         var irGenerator = new visitor.IRGenerator(typeTable);
         obj.ir = irGenerator.generate(obj.ast);
+        this.Optimize(obj.ir);
         obj.asm;
         filesResult.push(obj);
       } catch (err) {
         console.log(file.options.fileName)
         console.log(err);
-        console.log(err.stack)
+        // console.log(err.stack);
         console.log('')
       }
     }
@@ -65,6 +66,10 @@ Compiler.prototype = {
     DereferenceChecker.check(ast);
     var typeChecker = new visitor.TypeChecker(typeTable);
     typeChecker.check(ast);
+  },
+
+  Optimize: function(ir) {
+    (new visitor.ConstantFolder()).optimize(ir);
   }
 }
 

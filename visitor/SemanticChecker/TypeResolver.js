@@ -1,9 +1,9 @@
-var $extend = require('../util/extend');
-var $import = require('../util/import');
-var ASTVisitor = require('./ASTVisitor');
-var EntityVisitor = require('./EntityVisitor');
-var DeclarationVisitor = require('./DeclarationVisitor');
-var ErrorHandler = require('../util/ErrorHandler');
+var $extend = require('../../util/extend');
+var $import = require('../../util/import');
+var ASTVisitor = require('../AbstractVisitor/ASTVisitor');
+var EntityVisitor = require('../AbstractVisitor/EntityVisitor');
+var DeclarationVisitor = require('../AbstractVisitor/DeclarationVisitor');
+var ErrorHandler = require('../../util/ErrorHandler');
 module.exports = TypeResolver;
 
 $extend(TypeResolver, ASTVisitor);

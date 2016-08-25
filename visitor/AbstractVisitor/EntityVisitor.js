@@ -1,4 +1,4 @@
-var entity = require('../entity/index');
+var entity = require('../../entity/index');
 module.exports = EntityVisitor;
 
 function EntityVisitor() {

@@ -1,8 +1,8 @@
-var $extend = require('../util/extend');
-var $import = require('../util/import');
-var ASTVisitor = require('./ASTVisitor');
-var UserType = require('../type/UserType');
-var ErrorHandler = require('../util/ErrorHandler');
+var $extend = require('../../util/extend');
+var $import = require('../../util/import');
+var ASTVisitor = require('../AbstractVisitor/ASTVisitor');
+var UserType = require('../../type/UserType');
+var ErrorHandler = require('../../util/ErrorHandler');
 module.exports = DereferenceChecker;
 
 $extend(DereferenceChecker, ASTVisitor);

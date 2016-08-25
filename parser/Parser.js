@@ -1674,7 +1674,7 @@ Parser.prototype = {
       args.push(arg);
       while(this.peek().value === ',') {
         this.acceptSymbol(',');
-        arg == this.expr();
+        arg = this.expr();
         args.push(arg);
       }
     }
@@ -1715,7 +1715,7 @@ Parser.prototype = {
         t = this.acceptCharacter();
         e = new ast.IntegerLiteralNode(this.location(t), 
                                        type.IntegerTypeRef.charRef(), 
-                                       t.value.charCodeAt(0));
+                                       t.value.charCodeAt(1));
         break;
       case 'string':
         t = this.acceptString();
@@ -1875,15 +1875,16 @@ Parser.prototype = {
 
   integerNode: function(loc, value) {
     if (value.slice(-2) === 'UL'){
-      value = value.slice(-2);
+      value = parseInt(value.slice(-2));
       return new ast.IntegerLiteralNode(loc, type.IntegerTypeRef.ulongRef(), value);
     } else if (value.slice(-1) === 'U') {
-      value = value.slice(-1);
+      value = parseInt(value.slice(-1));
       return new ast.IntegerLiteralNode(loc, type.IntegerTypeRef.uintRef(), value);
     } else if (value.slice(-1) === 'L') {
-      value = value.slice(-1);
+      value = parseInt(value.slice(-1));
       return new ast.IntegerLiteralNode(loc, type.IntegerTypeRef.longRef(), value);
     } else {
+      value = parseInt(value);
       return new ast.IntegerLiteralNode(loc, type.IntegerTypeRef.intRef(), value);
     }
   },
