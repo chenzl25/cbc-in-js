@@ -29,10 +29,10 @@ $import(ConstantFolder.prototype, {
   },
 
   visitAssign: function(node) {
-    var fold = this.visit(node.rhs());
-    if (fold) {
-      node._rhs = fold;
-    }
+    var foldL = this.visit(node.lhs());
+    var foldR = this.visit(node.rhs());
+    if (foldL) node._lhs = foldL;
+    if (foldR) node._rhs = foldR;
   },
 
   visitCJump: function(node) {
