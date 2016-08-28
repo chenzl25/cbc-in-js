@@ -15,6 +15,10 @@ Entity.prototype = {
     return this._name;
   },
 
+  symbolString: function() {
+    return this._name;
+  },
+
   isDefined: function() {
     throw new Error('Entity abstract method call: isDefined');
   },

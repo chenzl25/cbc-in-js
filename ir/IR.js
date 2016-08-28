@@ -82,7 +82,7 @@ IR.prototype = {
   /** Returns the list of common symbols.
    *  A common symbol is a variable which has
    *  global scope and is not initialized.  */
-  definedCommonSymbolsL: function() {
+  definedCommonSymbols: function() {
     if (this._comms == null) {
       this.initVariables();
     }

@@ -223,7 +223,7 @@ $import(TypeChecker.prototype, {
     this.checkCond(node.cond());
     var t = node.thenExpr().type();
     var e = node.elseExpr().type();
-    if (thenExpr.isSameType(elseExpr)) {
+    if (t.isSameType(e)) {
       return null;
     } else if (t.isCompatible(e)) { // insert cast on thenBody
       node.setThenExpr(new CastNode(e, node.thenExpr()));

@@ -3,6 +3,7 @@ var $import = require('../util/import');
 var Operand = require('./Operand');
 module.exports = Register;
 
+// Interface
 $extend(Register, Operand);
 function Register() {
 
