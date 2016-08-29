@@ -26,7 +26,7 @@ Statistics.prototype = {
     return this.fetchCount(this._registerUsage, reg);
   },
 
-  registerUsed: function() {
+  registerUsed: function(reg) {
     this.incrementCount(this._registerUsage, reg);
   },
 

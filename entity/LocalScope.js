@@ -67,10 +67,11 @@ $import(LocalScope.prototype, {
 
   allLocalVariables: function() {
     var result = [];
-    for (var s of this.allLocalScopes()) {
-      result = result.concat(s.allLocalVariables());
+    var allLocalScopes = this.allLocalScopes();
+    for (var s of allLocalScopes) {
+      result = result.concat(s.localVariables());
     }
-    return reuslt;
+    return result;
   },
 
   /**
@@ -95,7 +96,8 @@ $import(LocalScope.prototype, {
 
   staticLocalVariables: function() {
     var result = [];
-    for (var s of this.allLocalScopes()) {
+    var allLocalScopes = this.allLocalScopes();
+    for (var s of allLocalScopes) {
       for (var v of s._variables.values()) {
         if (v.isPrivate()) {
           result.push(v);
@@ -113,7 +115,7 @@ $import(LocalScope.prototype, {
   },
 
   collectScope: function(buf) {
-    buf = buf.push(this);
+    buf.push(this);
     for (var s of this._children) {
       s.collectScope(buf);
     }

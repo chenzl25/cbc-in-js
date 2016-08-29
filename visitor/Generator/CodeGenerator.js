@@ -7,6 +7,8 @@ var AssemblyCode = require('../../sysdep/x86/AssemblyCode');
 var RegisterClass = require('../../sysdep/x86/RegisterClass');
 var Register = require('../../sysdep/x86/Register');
 var Op = require('../../ir/Op');
+var Int = require('../../ir/Int');
+var Str = require('../../ir/Str');
 module.exports = CodeGenerator;
 
 $extend(CodeGenerator, IRVisitor)
@@ -40,7 +42,7 @@ $import(CodeGenerator.prototype, {
 
   locateSymbols: function(ir) {
     var constSymbols = new asm.SymbolTable(CodeGenerator.CONST_SYMBOL_BASE);
-    for (var ent of ir.constantTable().entries()) {
+    for (var ent of ir.constantTable().values()) {
       this.locateStringLiteral(ent, constSymbols);
     }
     for (var v of ir.allGlobalVariables()) {
@@ -54,7 +56,7 @@ $import(CodeGenerator.prototype, {
   locateStringLiteral: function(ent, syms) {
     // ConstantEntry ent, SymbolTable syms
     ent.setSymbol(syms.newSymbol());
-    ent.setMemref(this.mem(ent.symbo()));
+    ent.setMemref(this.mem(ent.symbol()));
     ent.setAddress(this.imm(ent.symbol()));
   },
 
@@ -99,7 +101,7 @@ $import(CodeGenerator.prototype, {
 
   generateAssemblyCode: function(ir) {
     var file = this.newAssemblyCode();
-    file._file(ir.fileName());
+    file._file('"' + ir.fileName() + '"');
     if (ir.isGlobalVariableDefined()) {
       this.generateDataSection(file, ir.definedGlobalVariables());
     }
@@ -127,7 +129,7 @@ $import(CodeGenerator.prototype, {
     file._data();
     for (var v of gvars) {
       var sym = this.globalSymbol(v.symbolString());
-      if (!v.private()) {
+      if (!v.isPrivate()) {
         file._globl(sym);
       }
       file._align(v.alignment());
@@ -141,7 +143,7 @@ $import(CodeGenerator.prototype, {
   /** Generates immediate values for .data section */
   generateImmediate: function(file, size, node) {
     // AssemblyCode file, long size, Expr node
-    if (node instanceof asm.Int) {
+    if (node instanceof Int) {
       switch(size) {
       case 1: file._byte(node.value());    break;
       case 2: file._value(node.value());   break;
@@ -163,12 +165,12 @@ $import(CodeGenerator.prototype, {
   },
 
   /** Generates .rodata entries (constant strings) */
-  generateReadOnlyDataSection: function(file, constants) {
-    // AssemblyCode file, ConstantTable constants
+  generateReadOnlyDataSection: function(file, constantTable) {
+    // AssemblyCode file, ConstantTable constantTable
     file._section('.rodata');
-    for (var ent of constants) {
+    for (var ent of constantTable.values()) {
       file.label(ent.symbol());
-      fle._string(ent.value());
+      file._string(ent.value());
     }
   },
 
@@ -180,10 +182,10 @@ $import(CodeGenerator.prototype, {
       if (! func.isPrivate()) {
         file._globl(sym);
       }
-      file._type(sym, '@functoin');
+      file._type(sym, '@function');
       file.label(sym);
       this.compileFunctionBody(file, func);
-      file._size(sym, '.-', sym.toSource());
+      file._size(sym, '.-' + sym.toSource());
     }
   },
 
@@ -240,7 +242,7 @@ $import(CodeGenerator.prototype, {
    */
   
   alignStack: function(size) {
-    this.align(size, CodeGenerator.STACK_WORD_SIZE);
+    return this.align(size, CodeGenerator.STACK_WORD_SIZE);
   },
 
   align: function(n, alignment) {
@@ -266,8 +268,8 @@ $import(CodeGenerator.prototype, {
 
   optimize: function(body) {
     // AssemblyCode body
-    body.apply(PeepholeOptimizer.defaultSet());
-    body.reduceLabels();
+    // body.apply(PeepholeOptimizer.defaultSet());
+    // body.reduceLabels();
     return body;
   },
 
@@ -303,7 +305,7 @@ $import(CodeGenerator.prototype, {
     if (this._calleeSaveRegistersCache == null) {
       var regs = [];
       for (var c of CodeGenerator.CALLEE_SAVE_REGISTERS) {
-        regs.add(new Register(c, this._naturalType));
+        regs.push(new Register(c, this._naturalType));
       }
       this._calleeSaveRegistersCache = regs;
     }
@@ -314,7 +316,7 @@ $import(CodeGenerator.prototype, {
     // AssemblyCode file,body, StackFrameInfo frame
     file._virtualStack.reset();
     this.prologue(file, frame._saveRegs, frame.frameSize());
-    file.addALL(body.assemblies());
+    file.addAll(body.assemblies());
     this.epilogue(file, frame._saveRegs);
     file._virtualStack.fixOffset(0);
   },
@@ -333,8 +335,8 @@ $import(CodeGenerator.prototype, {
     for (var i = savedRegs.length-1; i >= 0; i--) {
       file.virtualPop(savedRegs[i]);
     }
-    file.mov(bp(), sp());
-    file.pop(bp());
+    file.mov(this.bp(), this.sp());
+    file.pop(this.bp());
     file.ret();
   },
 
@@ -357,7 +359,7 @@ $import(CodeGenerator.prototype, {
     var len = parentStackLen || 0;
     for (var v of scope.localVariables()) {
       len = this.alignStack(len + v.allocSize());
-      v.setMemref(this.relocatableMem(-len, bp()));
+      v.setMemref(this.relocatableMem(-len, this.bp()));
     }
     var maxLen = len;
     for (var s of scope.children()) {
@@ -406,12 +408,12 @@ $import(CodeGenerator.prototype, {
 
   visitCall: function(node) {
     var args = node.args();
-    for (var i = args.length-1; i >= 0; i++) {
+    for (var i = args.length-1; i >= 0; i--) {
       this.compile(args[i]);
       this._as.push(this.ax());
     }
     if (node.isStaticCall()) {
-      this._as.call(node.function().callingSymbol());
+      this._as.call(node.func().callingSymbol());
     } else {
       this.compile(node.expr());
       this._as.callAbsolute(this.ax());
@@ -627,7 +629,7 @@ $import(CodeGenerator.prototype, {
   },
 
   visitStr: function(node) {
-    this.loadConstant(node, this,ax());
+    this.loadConstant(node, this.ax());
   },
 
   //
@@ -637,7 +639,7 @@ $import(CodeGenerator.prototype, {
   visitAssign: function(node) {
     if (node.lhs().isAddr() && node.lhs().memref() != null) {
       this.compile(node.rhs());
-      this.store(ax(this.node.lhs().type()), this.node.lhs().memref());
+      this.store(this.ax(node.lhs().type()), node.lhs().memref());
     } else if (node.rhs().isConstant()) {
       this.compile(node.lhs());
       this._as.mov(this.ax(), this.cx());
@@ -758,11 +760,11 @@ $import(CodeGenerator.prototype, {
     } else if (arguments.length === 2 && _1 instanceof asm.Symbol) {
       var offset = _1;
       var reg = _2;
-      return new IndirectMemoryReference(offset, reg);
+      return new asm.IndirectMemoryReference(offset, reg);
     } else if (arguments.length === 2 && typeof _1 === 'number') {
       var offset = _1;
       var reg = _2;
-      return new IndirectMemoryReference(offset, reg);
+      return new asm.IndirectMemoryReference(offset, reg);
     } else {
       throw new Error('#mem arguments error');
     }
@@ -772,9 +774,9 @@ $import(CodeGenerator.prototype, {
     if (_1 instanceof asm.Symbol) {
       return new asm.ImmediateValue(_1);
     } else if (_1 instanceof asm.Literal) {
-      return new ImmediateValue(_1);
+      return new asm.ImmediateValue(_1);
     } else if (typeof _1 === 'number') {
-      return new ImmediateValue(n);
+      return new asm.ImmediateValue(_1);
     } else {
       throw new Error('#imm arguments error');
     }
@@ -801,7 +803,7 @@ function StackFrameInfo() {
 
 StackFrameInfo.prototype = {
   saveRegsSize: function() { 
-    return this._saveRegs.size() * CodeGenerator.STACK_WORD_SIZE; 
+    return this._saveRegs.length * CodeGenerator.STACK_WORD_SIZE; 
   },
 
   lvarOffset: function() { 

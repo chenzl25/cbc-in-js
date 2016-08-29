@@ -5,7 +5,7 @@ function SymbolTable(base) {
   // String base
   this._base = base;
   this._map = new Map(); // UnnamedSymbol -> String
-  this.seq = 0;
+  this._seq = 0;
 };
 
 SymbolTable.DUMMY_SYMBOL_BASE = 'L';
@@ -22,7 +22,7 @@ SymbolTable.prototype = {
     if (str != null) {
       return str;
     } else {
-      var newStr = this.newStr();
+      var newStr = this.newString();
       this._map.set(sym, newStr);
       return newStr;
     }

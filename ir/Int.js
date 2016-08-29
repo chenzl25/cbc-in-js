@@ -25,7 +25,7 @@ $import(Int.prototype, {
    * @return {Object} // ImmediateValue
    */
   asmValue: function() {
-    return new ImmediateValue(new IntegerLiteral(value));
+    return new ImmediateValue(new IntegerLiteral(this._value));
   },
 
   /**

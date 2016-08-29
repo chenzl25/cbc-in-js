@@ -1,5 +1,8 @@
-var Type = {};
 module.exports = Type;
+
+function Type(sym) {
+  this._sym = sym;
+}
 
 /**
  * @param {Number} size
@@ -22,11 +25,8 @@ Type.get = function(size) {
   }
 }
 
-function MyEnum(sym) {
-  this._sym = sym;
-}
 
-MyEnum.prototype.size = function() {
+Type.prototype.size = function() {
   switch (this.sym) {
     case 'INT8':
       return 1;
@@ -41,7 +41,7 @@ MyEnum.prototype.size = function() {
   }
 }
 
-Type.INT8 = new MyEnum('INT8');
-Type.INT16 = new MyEnum('INT16');
-Type.INT32 = new MyEnum('INT32');
-Type.INT64 = new MyEnum('INT64');
+Type.INT8 = new Type('INT8');
+Type.INT16 = new Type('INT16');
+Type.INT32 = new Type('INT32');
+Type.INT64 = new Type('INT64');

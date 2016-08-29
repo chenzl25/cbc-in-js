@@ -66,7 +66,7 @@ $import(ToplevelScope.prototype, {
     var result = [] // Variable[]
     for (var ent of this._entities.values()) {
       if (ent instanceof Variable) {
-        result.add(ent);
+        result.push(ent);
       }
     }
     result = result.concat(this.staticLocalVariables());
@@ -77,7 +77,7 @@ $import(ToplevelScope.prototype, {
     var result = []; // DefinedVariable[]
     for (var ent of this._entities.values()) {
       if (ent instanceof DefinedVariable) {
-        result.add(ent);
+        result.push(ent);
       }
     }
     result = result.concat(this.staticLocalVariables());

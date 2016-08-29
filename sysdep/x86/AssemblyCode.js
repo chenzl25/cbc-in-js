@@ -1,5 +1,7 @@
 var Statistics = require('../../asm/Statistics');
 var asm = require('../../asm/index');
+var Register = require('../../sysdep/x86/Register');
+var RegisterClass = require('../../sysdep/x86/RegisterClass');
 module.exports = AssemblyCode;
 
 function AssemblyCode(naturalType, stackWordSize, labelSymbols) {
@@ -35,7 +37,7 @@ AssemblyCode.prototype = {
 
   statistics: function() {
     if (this._statistics == null) {
-      this._statistics = Statistics.collect(assemblies);
+      this._statistics = Statistics.collect(this._assemblies);
     }
     return this._statistics;
   },
@@ -46,9 +48,11 @@ AssemblyCode.prototype = {
 
   label: function(_1) {
     if (_1 instanceof asm.Symbol) {
-      this._assemblies.push(new asm.Label(sym));
+      this._assemblies.push(new asm.Label(_1));
     } else if (_1 instanceof asm.Label) {
-      this._assemblies.push(label)
+      this._assemblies.push(_1)
+    } else {
+      throw new Error('#label arguments error');
     }
   },
 
@@ -109,18 +113,18 @@ AssemblyCode.prototype = {
   },
 
   typeSuffix: function(t1, t2) {
-    return this._typeSuffix(t1) + t2?this._typeSuffix(t2):'';
+    return this._typeSuffix(t1) + (t2 == null?'':this._typeSuffix(t2));
   },
   
   _typeSuffix: function(t) {
-      switch (t) {
-      case INT8: return "b";
-      case INT16: return "w";
-      case INT32: return "l";
-      case INT64: return "q";
-      default:
-          throw new Error("unknown register type: " + t.size());
-      }
+    switch (t) {
+    case asm.Type.INT8: return "b";
+    case asm.Type.INT16: return "w";
+    case asm.Type.INT32: return "l";
+    case asm.Type.INT64: return "q";
+    default:
+      throw new Error("unknown register type: " + t.size());
+    }
   },
 
   //
@@ -139,12 +143,12 @@ AssemblyCode.prototype = {
     this.directive("\t.data");
   },
 
-  _section: function(name) {
-    this.directive("\t.section\t" + name);
-  },
-
   _section: function(name, flags, type, group, linkage) {
-    this.directive("\t.section\t" + name + "," + flags + "," + type + "," + group + "," + linkage);
+    if (arguments.length === 1) {
+      this.directive("\t.section\t" + name);
+    } else {
+      this.directive("\t.section\t" + name + "," + flags + "," + type + "," + group + "," + linkage);
+    }
   },
 
   _globl: function(sym) {
@@ -176,39 +180,23 @@ AssemblyCode.prototype = {
   },
 
   _byte: function(val) {
-    this.directive(".byte\t" + new asm.IntegerLiteral(val).toSource());
+    this.directive(".byte\t" + val.toString());
   },
 
   _value: function(val) {
-    this.directive(".value\t" + new asm.IntegerLiteral(val).toSource());
+    this.directive(".value\t" + val.toString());
   },
 
   _long: function(val) {
-    this.directive(".long\t" + new asm.IntegerLiteral(val).toSource());
+    this.directive(".long\t" + val.toString());
   },
 
   _quad: function(val) {
-    this.directive(".quad\t" + new asm.IntegerLiteral(val).toSource());
-  },
-
-  _byte: function(val) {
-    this.directive(".byte\t" + val.toSource());
-  },
-
-  _value: function(val) {
-    this.directive(".value\t" + val.toSource());
-  },
-
-  _long: function(val) {
-    this.directive(".long\t" + val.toSource());
-  },
-
-  _quad: function(val) {
-    this.directive(".quad\t" + val.toSource());
+    this.directive(".quad\t" + val.toString());
   },
 
   _string: function(str) {
-    this.directive("\t.string\t" + TextUtils.dumpString(str));
+    this.directive("\t.string\t" + str.toString());
   },
 
   //
@@ -216,13 +204,13 @@ AssemblyCode.prototype = {
   //
   
   virtualPush: function(reg) {
-    this._virtualStack.entend(this._stackWordSize);
+    this._virtualStack.extend(this._stackWordSize);
     this.mov(reg, this._virtualStack.top());
   },
 
   virtualPop: function(reg) {
     this.mov(this._virtualStack.top(), reg);
-    this.virtualStack.rewind(this._stackWordSize);
+    this._virtualStack.rewind(this._stackWordSize);
   },
 
   //
@@ -242,7 +230,7 @@ AssemblyCode.prototype = {
   },
 
   cmp: function(a, b) {
-    this.insn(b.type, "cmp", a, b);
+    this.insn(b.type(), "cmp", a, b);
   },
 
   sete: function(reg) {
@@ -286,7 +274,7 @@ AssemblyCode.prototype = {
   },
 
   test: function(a, b) {
-    this.insn(b.type, "test", a, b);
+    this.insn(b.type(), "test", a, b);
   },
 
   push: function(reg) {
@@ -314,10 +302,12 @@ AssemblyCode.prototype = {
   mov: function(src, dest) {
     if (src instanceof asm.Register && dest instanceof asm.Register) { // move
       this.insn(this._naturalType, "mov", src, dest);
-    } else if (src instanceof asm.Operand) { // load
-      this.insn(dest.type, "mov", src, dest);
-    } else if (dest instanceof asm.Operand) { //save
-      this.insn(src.type, "mov", src, dest);
+    } else if (src instanceof asm.Operand && dest instanceof asm.Register) { // load
+      this.insn(dest.type(), "mov", src, dest);
+    } else if (src instanceof asm.Register && dest instanceof asm.Operand) { //save
+      this.insn(src.type(), "mov", src, dest);
+    } else {
+      throw new Error('mov arguments error');
     }
   },
 
@@ -329,17 +319,17 @@ AssemblyCode.prototype = {
 
   movsx: function(src, dest) {
     // Register src,dest
-    this.insn("movs", this.typeSuffix(src.type, dest.type), src, dest);
+    this.insn("movs", this.typeSuffix(src.type(), dest.type()), src, dest);
   },
 
   movzx: function(src, dest) {
     // Register src,dest
-    this.insn("movz", this.typeSuffix(src.type, dest.type), src, dest);
+    this.insn("movz", this.typeSuffix(src.type(), dest.type()), src, dest);
   },
 
   movzb: function(src, dest) {
     // Register src,dest
-    this.insn("movz", "b" + this.typeSuffix(dest.type), src, dest);
+    this.insn("movz", "b" + this.typeSuffix(dest.type()), src, dest);
   },
 
   lea: function(src, dest) {
@@ -348,22 +338,22 @@ AssemblyCode.prototype = {
   },
 
   neg: function(reg) {
-    this.insn(reg.type, "neg", reg);
+    this.insn(reg.type(), "neg", reg);
   },
 
   add: function(diff, base) {
     // Operand diff, Register base
-    this.insn(base.type, "add", diff, base);
+    this.insn(base.type(), "add", diff, base);
   },
 
   sub: function(diff, base) {
     // Operand diff, Register base
-    this.insn(base.type, "sub", diff, base);
+    this.insn(base.type(), "sub", diff, base);
   },
 
   imul: function(m, base) {
     // Operand m, Register base
-    this.insn(base.type, "imul", m, base);
+    this.insn(base.type(), "imul", m, base);
   },
 
   cltd: function() {
@@ -372,47 +362,47 @@ AssemblyCode.prototype = {
 
   div: function(base) {
     // Register base
-    this.insn(base.type, "div", base);
+    this.insn(base.type(), "div", base);
   },
 
   idiv: function(base) {
     // Register base
-    this.insn(base.type, "idiv", base);
+    this.insn(base.type(), "idiv", base);
   },
 
   not: function(reg) {
     // Register reg
-    this.insn(reg.type, "not", reg);
+    this.insn(reg.type(), "not", reg);
   },
 
   and: function(bits, base) {
     // Operand bits, Register base
-    this.insn(base.type, "and", bits, base);
+    this.insn(base.type(), "and", bits, base);
   },
 
   or: function(bits, base) {
     // Operand bits, Register base
-    this.insn(base.type, "or", bits, base);
+    this.insn(base.type(), "or", bits, base);
   },
 
   xor: function(bits, base) {
     // Operand bits, Register base
-    this.insn(base.type, "xor", bits, base);
+    this.insn(base.type(), "xor", bits, base);
   },
 
   sar: function(bits, base) {
     // Register bits, Register base
-    this.insn(base.type, "sar", bits, base);
+    this.insn(base.type(), "sar", bits, base);
   },
 
   sal: function(bits, base) {
     // Register bits, Register base
-    this.insn(base.type, "sal", bits, base);
+    this.insn(base.type(), "sal", bits, base);
   },
 
   shr: function(bits, base) {
     // Register bits, Register base
-    this.insn(base.type, "shr", bits, base);
+    this.insn(base.type(), "shr", bits, base);
   },
 };
 
@@ -437,7 +427,7 @@ VirtualStack.prototype = {
 
   extend: function(len) {
     this._offset += len;
-    this._max = Math.max(offset, this._max);
+    this._max = Math.max(this._offset, this._max);
   },
 
   rewind: function(len) {
@@ -450,12 +440,12 @@ VirtualStack.prototype = {
     return mem;
   },
 
-  relocatableMem: function(offset, basse) {
+  relocatableMem: function(offset, base) {
     return asm.IndirectMemoryReference.relocatable(offset, base);
   },
 
   bp: function() {
-    return this.asm.Register(RegisterClass.BP, this.naturalType);
+    return new Register(RegisterClass.BP, this.naturalType);
   },
 
   fixOffset: function(diff) {

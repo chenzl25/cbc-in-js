@@ -42,7 +42,8 @@ $import(Func.prototype, {
    */
 
   setCallingSymbol: function(sym) {
-    if (this.callingSymbol != null) {
+    if (this._callingSymbol != null) {
+      if (this._callingSymbol.name() === sym.name()) return; // fix `node test` will set again
       throw new Error("must not happen: Function#callingSymbol was set again");
     }
     this._callingSymbol = sym;
@@ -53,7 +54,7 @@ $import(Func.prototype, {
    */
 
   callingSymbol: function() {
-    if (this.callingSymbol == null) {
+    if (this._callingSymbol == null) {
       throw new Error("must not happen: Function#callingSymbol called but null");
     }
     return this._callingSymbol;

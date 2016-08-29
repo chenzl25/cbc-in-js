@@ -1,3 +1,5 @@
+var MemoryReference = require('../asm/MemoryReference');
+var ImmediateValue = require('../asm/ImmediateValue');
 module.exports = Entity;
 
 function Entity(priv, type, name) {

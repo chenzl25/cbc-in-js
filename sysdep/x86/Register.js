@@ -60,7 +60,7 @@ $import(Register.prototype, {
       case RegisterClass.BX:
       case RegisterClass.CX:
       case RegisterClass.DX:
-        return baseName().subStr(0, 1) + "l";
+        return this.baseName().substr(0, 1) + "l";
       default:
         throw new Error("does not have lower-byte register: " + _class);
       }

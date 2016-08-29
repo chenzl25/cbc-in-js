@@ -30,20 +30,20 @@ $import(Str.prototype, {
    * @return {Object} // MemoryReference
    */
   memref: function() {
-    return entry.memref();
+    return this._entry.memref();
   },
 
   /**
    * @return {Object} // Operand
    */ 
   address: function() {
-    return entry.address();
+    return this._entry.address();
   },
 
   /**
    * @return {Object} // ImmediateValue
    */
   asmValue: function() {
-    return entry.address();
+    return this._entry.address();
   }
 });

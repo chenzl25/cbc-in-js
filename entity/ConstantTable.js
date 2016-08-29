@@ -7,17 +7,17 @@ function ConstantTable() {
 
 ConstantTable.prototype = {
   isEmpty: function() {
-    return this._table.size() === 0;
+    return this._table.size === 0;
   },
 
   intern: function(s) {
-    if (this._table.has(s)) this._table.get(s);
+    if (this._table.has(s)) return this._table.get(s);
     var ent = new ConstantEntry(s)
     this._table.set(s, ent);
     return ent;
   },
 
-  entries: function() {
+  values: function() {
     var result = new Set();
     for (var ent of this._table.values()) {
       result.add(ent);

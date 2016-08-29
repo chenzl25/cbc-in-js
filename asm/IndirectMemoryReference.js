@@ -17,11 +17,12 @@ function IndirectMemoryReference(offset, base, fixed) {
   this._fixed = fixed;
 };
 
+IndirectMemoryReference.relocatable = function(offset, base) {
+  // long offset, Register base
+  return new IndirectMemoryReference(new IntegerLiteral(offset), base, false);
+}
+
 $import(IndirectMemoryReference.prototype, {
-  relocatable: function(offset, base) {
-    // long offset, Register base
-    return new IndirectMemoryReference(new IntegerLiteral(offset), base, false);
-  },
 
   offset: function() {
     return this._offset;

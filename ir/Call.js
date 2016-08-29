@@ -34,7 +34,7 @@ $import(Call.prototype, {
    * Returns a function object which is refered by expression.
    * This method expects this is static function call (isStaticCall()).
    */
-  Func: function() {
+  func: function() {
     var ent = this._expr.getEntityForce();
     if (ent == null) {
         throw new Error("not a static funcall");

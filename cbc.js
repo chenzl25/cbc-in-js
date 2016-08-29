@@ -39,7 +39,8 @@ filesResult.forEach(function(obj) {
     irPrinter.print(obj.ir);
   }
   if (argv.isDumpASM) {
-
+    // console.log(obj.asm);
+    console.log(obj.asm.toSource());
   }
 });
 

@@ -17,6 +17,10 @@ $import(Directive.prototype, {
   toSource: function(table) {
     // SymbolTable table
     return this._content;
+  },
+
+  content: function() {
+    return this._content;
   }
 });
 

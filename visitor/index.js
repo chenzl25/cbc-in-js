@@ -5,6 +5,7 @@ module.exports.ASTVisitor = require('./AbstractVisitor/ASTVisitor');
 module.exports.IRVisitor  = require('./AbstractVisitor/IRVisitor');
 module.exports.EntityVistor = require('./AbstractVisitor/EntityVisitor');
 module.exports.DeclarationVisitor = require('./AbstractVisitor/DeclarationVisitor');
+module.exports.ASMVisitor = require('./AbstractVisitor/ASMVisitor');
 /*=====  End of Abstract Visitor  ======*/
 
 

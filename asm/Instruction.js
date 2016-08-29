@@ -9,10 +9,12 @@ function Instruction(mnemonic, suffix, _3, _4, _5) {
   // String mnemonic, String suffix, Operand operand1,operand1, boolean reloc
   this._mnemonic = mnemonic;
   this._suffix = suffix || '';
+  this._operands = [];
+  this._needRelocation = false;
   if (arguments.length === 3) {
     this._operands = [_3];
     this._needRelocation = false;
-  } 
+  }
   if (arguments.length === 4) {
     this._operands = [_3, _4];
     this._needRelocation = false;

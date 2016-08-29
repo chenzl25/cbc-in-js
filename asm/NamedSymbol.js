@@ -18,6 +18,6 @@ $import(NamedSymbol.prototype, {
   },
 
   toString: function() {
-    return '#' + this._name;
+    return this._name;
   }
 }); 
