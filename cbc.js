@@ -9,7 +9,7 @@ var cmdParse = require('./util/cmdParser');
 var astPrinter = new ASTPrinter();
 var irPrinter = new IRPrinter();
 var argv = cmdParse(process.argv);
-
+var cwd = process.cwd();
 
 var files = argv.files.filter(function(fileName) {
   if (fileName.slice(-3) === '.cb') {
@@ -52,25 +52,24 @@ filesResult.forEach(function(obj) {
     return;
   }
 
-  var cwd = process.cwd();
-  if (argv.genAssembly) {
+  if (argv.genAssembly || argv.outputPath) {
     fs.writeFileSync(path.resolve(cwd, obj.fileName.replace('.cb', '.s')), 
                      obj.asm.toSource());
-    return;
+    if (argv.genAssembly) return;
   }
 
   if (argv.genObject || argv.outputPath) {
     compiler.platform.assembler()
             .assemble(path.resolve(cwd, obj.fileName.replace('.cb', '.s')),
                       path.resolve(cwd, obj.fileName.replace('.cb', '.o')));
-    return;
+    if(argv.genObject) return;
   }
 });
 
 // link
-if (argv.outputPath) {
+if (argv.outputPath != '.') {
   var filePaths = files.map(function(file) {
-    return path.resolve(file.options.dirPath, file.options.fileName);
+    return path.resolve(cwd, file.options.fileName).replace('.cb', '.o');
   })
   compiler.platform.linker().generateExecutable(filePaths ,argv.outputPath);
 }

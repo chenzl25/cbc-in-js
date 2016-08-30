@@ -11,9 +11,9 @@ function GNULinker() {
 
 GNULinker.LINKER = "/usr/bin/ld";
 GNULinker.DYNAMIC_LINKER      = "/lib/ld-linux.so.2";
-GNULinker.C_RUNTIME_INIT      = "/usr/lib/crti.o";
-GNULinker.C_RUNTIME_START     = "/usr/lib/crt1.o";
-GNULinker.C_RUNTIME_FINI      = "/usr/lib/crtn.o";
+GNULinker.C_RUNTIME_INIT      = "/usr/lib32/crti.o";
+GNULinker.C_RUNTIME_START     = "/usr/lib32/crt1.o";
+GNULinker.C_RUNTIME_FINI      = "/usr/lib32/crtn.o";
 
 $import(GNULinker.prototype, {
   generateExecutable: function(args, destPath, options) {

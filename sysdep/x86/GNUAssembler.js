@@ -16,7 +16,7 @@ $import(GNUAssembler.prototype, {
     var cmd = [];
     cmd.push('as');
     cmd = cmd.concat(options.args);
-    cmd = cmd.concat('-W32');
+    cmd.push('-W32');
     cmd.push('-o');
     cmd.push(destPath);
     cmd.push(srcPath);
