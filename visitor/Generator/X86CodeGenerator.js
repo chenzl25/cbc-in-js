@@ -9,27 +9,27 @@ var Register = require('../../sysdep/x86/Register');
 var Op = require('../../ir/Op');
 var Int = require('../../ir/Int');
 var Str = require('../../ir/Str');
-module.exports = CodeGenerator;
+module.exports = X86CodeGenerator;
 
-$extend(CodeGenerator, IRVisitor)
-function CodeGenerator() {
+$extend(X86CodeGenerator, IRVisitor)
+function X86CodeGenerator(naturalType) {
   // Type naturalType
-  this._naturalType = asm.Type.INT32;
+  this._naturalType = naturalType || asm.Type.INT32;
   this._as; // AssemblyCode
   this._epilogue; // Label
   this._calleeSaveRegistersCache;
 };
 
-CodeGenerator.LABEL_SYMBOL_BASE = '.L';
-CodeGenerator.CONST_SYMBOL_BASE = '.LC';
-CodeGenerator.STACK_WORD_SIZE = 4;
-CodeGenerator.PARAM_START_WORD = 2;
-CodeGenerator.CALLEE_SAVE_REGISTERS = [
+X86CodeGenerator.LABEL_SYMBOL_BASE = '.L';
+X86CodeGenerator.CONST_SYMBOL_BASE = '.LC';
+X86CodeGenerator.STACK_WORD_SIZE = 4;
+X86CodeGenerator.PARAM_START_WORD = 2;
+X86CodeGenerator.CALLEE_SAVE_REGISTERS = [
         RegisterClass.BX, RegisterClass.BP,
         RegisterClass.SI, RegisterClass.DI]
 
 
-$import(CodeGenerator.prototype, {
+$import(X86CodeGenerator.prototype, {
   /** Compiles IR and generates assembly code. */
   generate: function(ir) {
     this.locateSymbols(ir);
@@ -41,7 +41,7 @@ $import(CodeGenerator.prototype, {
   //
 
   locateSymbols: function(ir) {
-    var constSymbols = new asm.SymbolTable(CodeGenerator.CONST_SYMBOL_BASE);
+    var constSymbols = new asm.SymbolTable(X86CodeGenerator.CONST_SYMBOL_BASE);
     for (var ent of ir.constantTable().values()) {
       this.locateStringLiteral(ent, constSymbols);
     }
@@ -119,8 +119,8 @@ $import(CodeGenerator.prototype, {
 
   newAssemblyCode: function() {
     return new AssemblyCode(this._naturalType,  
-                    CodeGenerator.STACK_WORD_SIZE,
-                    new asm.SymbolTable(CodeGenerator.LABEL_SYMBOL_BASE));
+                    X86CodeGenerator.STACK_WORD_SIZE,
+                    new asm.SymbolTable(X86CodeGenerator.LABEL_SYMBOL_BASE));
   },
 
   /** Generates initialized entries */
@@ -242,7 +242,7 @@ $import(CodeGenerator.prototype, {
    */
   
   alignStack: function(size) {
-    return this.align(size, CodeGenerator.STACK_WORD_SIZE);
+    return this.align(size, X86CodeGenerator.STACK_WORD_SIZE);
   },
 
   align: function(n, alignment) {
@@ -250,7 +250,7 @@ $import(CodeGenerator.prototype, {
   },
 
   stackSizeFromWordNum: function(numWords) {
-    return numWords * CodeGenerator.STACK_WORD_SIZE;
+    return numWords * X86CodeGenerator.STACK_WORD_SIZE;
   },
 
   compileFunctionBody: function(file, func) {
@@ -268,6 +268,7 @@ $import(CodeGenerator.prototype, {
 
   optimize: function(body) {
     // AssemblyCode body
+    // TODO
     // body.apply(PeepholeOptimizer.defaultSet());
     // body.reduceLabels();
     return body;
@@ -304,7 +305,7 @@ $import(CodeGenerator.prototype, {
   calleeSaveRegisters: function() {
     if (this._calleeSaveRegistersCache == null) {
       var regs = [];
-      for (var c of CodeGenerator.CALLEE_SAVE_REGISTERS) {
+      for (var c of X86CodeGenerator.CALLEE_SAVE_REGISTERS) {
         regs.push(new Register(c, this._naturalType));
       }
       this._calleeSaveRegistersCache = regs;
@@ -343,7 +344,7 @@ $import(CodeGenerator.prototype, {
   locateParameters: function(params) {
     // Parameter[] params
     // return addr and saved bp
-    var numWords = CodeGenerator.PARAM_START_WORD;
+    var numWords = X86CodeGenerator.PARAM_START_WORD;
     for (var v of params) {
       v.setMemref(this.mem(this.stackSizeFromWordNum(numWords), this.bp()));
       numWords++;
@@ -803,7 +804,7 @@ function StackFrameInfo() {
 
 StackFrameInfo.prototype = {
   saveRegsSize: function() { 
-    return this._saveRegs.length * CodeGenerator.STACK_WORD_SIZE; 
+    return this._saveRegs.length * X86CodeGenerator.STACK_WORD_SIZE; 
   },
 
   lvarOffset: function() { 

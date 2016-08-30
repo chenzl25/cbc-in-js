@@ -40,7 +40,7 @@ module.exports.ConstantFolder = require('./Optimizer/ConstantFolder');
 =            Generator            =
 =================================*/
 module.exports.IRGenerator = require('./Generator/IRGenerator');
-module.exports.CodeGenerator = require('./Generator/CodeGenerator');
+module.exports.X86CodeGenerator = require('./Generator/X86CodeGenerator');
 /*=====  End of Generator  ======*/
 
 

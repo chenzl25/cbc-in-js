@@ -1,6 +1,6 @@
 var fs = require('fs');
 var path = require('path');
-var compile = require('./compiler/Compiler');
+var Compiler = require('./compiler/Compiler').Compiler;
 var visitor = require('./visitor/index');
 var ASTPrinter = visitor.ASTPrinter;
 var IRPrinter = visitor.IRPrinter;
@@ -26,21 +26,52 @@ var files = argv.files.filter(function(fileName) {
     return result;
 })
 
-var filesResult = compile(files);
+var compiler = new Compiler();
+
+var filesResult = compiler.compile(files);
 
 filesResult.forEach(function(obj) {
   if (argv.isDumpTokens) {
     console.log(obj.tokens);
+    return;
   }
+
   if (argv.isDumpAST) {
     astPrinter.print(obj.ast);
+    return;
   }
+
   if (argv.isDumpIR) {
     irPrinter.print(obj.ir);
+    return;
   }
+
   if (argv.isDumpASM) {
     // console.log(obj.asm);
     console.log(obj.asm.toSource());
+    return;
+  }
+
+  var cwd = process.cwd();
+  if (argv.genAssembly) {
+    fs.writeFileSync(path.resolve(cwd, obj.fileName.replace('.cb', '.s')), 
+                     obj.asm.toSource());
+    return;
+  }
+
+  if (argv.genObject || argv.outputPath) {
+    compiler.platform.assembler()
+            .assemble(path.resolve(cwd, obj.fileName.replace('.cb', '.s')),
+                      path.resolve(cwd, obj.fileName.replace('.cb', '.o')));
+    return;
   }
 });
+
+// link
+if (argv.outputPath) {
+  var filePaths = files.map(function(file) {
+    return path.resolve(file.options.dirPath, file.options.fileName);
+  })
+  compiler.platform.linker().generateExecutable(filePaths ,argv.outputPath);
+}
 

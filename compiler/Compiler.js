@@ -1,10 +1,9 @@
 var fs = require('fs');
-
 var lex = require('../lexer/Lexer');
 var parse = require('../parser/Parser');
 var LibraryLoader = require('../parser/LibraryLoader');
-var TypeTable = require('../type/TypeTable');
 var visitor = require('../visitor/index');
+var X86Linux = require('../sysdep/x86/X86Linux');
 
 module.exports = compile;
 module.exports.Compiler = Compiler;
@@ -13,37 +12,39 @@ var loader = new LibraryLoader;
 
 /**
  * @param  {Array}  files //    [ {src, options}, ... ]
+ *                                      options->{fileName, dirPath}
  * @return {Array}  filesResult
  */
 
 function compile(files) {
-  var compiler = new Compiler(files);
-  return compiler.compile();
+  var compiler = new Compiler();
+  return compiler.compile(files);
 }
 
 
-function Compiler(files) {
-  this.files = files;
+function Compiler() {
+  this.platform = new X86Linux();
 }
 
 Compiler.prototype = {
   /**
-   * @return {Array} filesResult // [ {tokens, ast, ir, asm}, ... ]
+   * @return {Array} filesResult // [ {fileName, tokens, ast, ir, asm}, ... ]
    */
 
-  compile: function() {
+  compile: function(files) {
     var filesResult = [];
-    for (var file of this.files) {
+    for (var file of files) {
       try {
-        var obj = {};
+        var obj = {}, typeTable, irGenerator, codeGenerator;
+        obj.fileName = file.options.fileName;
         obj.tokens = lex(file.src, file.options);
         obj.ast = parse(obj.tokens, loader, file.options);
-        var typeTable = TypeTable.ilp32();
+        typeTable = this.platform.typeTable();
         this.semanticAnalyze(obj.ast, typeTable);
-        var irGenerator = new visitor.IRGenerator(typeTable);
+        irGenerator = new visitor.IRGenerator(typeTable);
         obj.ir = irGenerator.generate(obj.ast);
         this.Optimize(obj.ir);
-        var codeGenerator = new visitor.CodeGenerator();
+        codeGenerator = this.platform.codeGenerator();
         obj.asm = codeGenerator.generate(obj.ir);
         filesResult.push(obj);
       } catch (err) {
@@ -57,14 +58,16 @@ Compiler.prototype = {
   },
 
   semanticAnalyze: function(ast, typeTable) {
-    var localResolver = new visitor.LocalResolver()
+    var localResolver, typeResolver, DereferenceChecker, typeChecker;
+
+    localResolver = new visitor.LocalResolver()
     localResolver.resolve(ast);
-    var typeResolver = new visitor.TypeResolver(typeTable);
+    typeResolver = new visitor.TypeResolver(typeTable);
     typeResolver.resolve(ast);
     typeTable.semanticCheck();
-    var DereferenceChecker = new visitor.DereferenceChecker(typeTable);
+    DereferenceChecker = new visitor.DereferenceChecker(typeTable);
     DereferenceChecker.check(ast);
-    var typeChecker = new visitor.TypeChecker(typeTable);
+    typeChecker = new visitor.TypeChecker(typeTable);
     typeChecker.check(ast);
   },
 
