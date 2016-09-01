@@ -18,3 +18,7 @@ module.exports.Str = require('./Str');
 module.exports.Switch = require('./Switch');
 module.exports.Uni = require('./Uni');
 module.exports.Var = require('./Var');
+module.exports.Move = require('./Move');
+module.exports.Load = require('./Load');
+module.exports.Store = require('./Store');
+module.exports.Reg = require('./Reg');

@@ -6,7 +6,7 @@ module.exports = Uni;
 $extend(Uni, Expr);
 function Uni(type, op, expr) {
   // Type type, Op op, Expr expr
-  Uni.super.call(type);
+  Uni.super.call(this, type);
   this._op = op;
   this._expr = expr;
 };

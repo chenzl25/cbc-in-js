@@ -35,7 +35,7 @@ Compiler.prototype = {
     var filesResult = [];
     for (var file of files) {
       try {
-        var obj = {}, typeTable, irGenerator, codeGenerator;
+        var obj = {}, typeTable, irGenerator, irFlattener, codeGenerator;
         obj.fileName = file.options.fileName;
         obj.tokens = lex(file.src, file.options);
         obj.ast = parse(obj.tokens, loader, file.options);
@@ -44,8 +44,10 @@ Compiler.prototype = {
         irGenerator = new visitor.IRGenerator(typeTable);
         obj.ir = irGenerator.generate(obj.ast);
         this.Optimize(obj.ir);
-        codeGenerator = this.platform.codeGenerator();
-        obj.asm = codeGenerator.generate(obj.ir);
+        irFlattener = new visitor.IRFlattener(typeTable);
+        irFlattener.flatten(obj.ir);
+        // codeGenerator = this.platform.codeGenerator();
+        // obj.asm = codeGenerator.generate(obj.ir);
         filesResult.push(obj);
       } catch (err) {
         console.log(file.options.fileName)

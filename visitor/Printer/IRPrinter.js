@@ -130,6 +130,7 @@ $import(IRPrinter.prototype, {
     this.in();
     this.visit(node.cond());
     this.out();
+    console.log( node.thenLabel() , "!!")
     this.pair('thenLabel', node.thenLabel());
     this.pair('elseLabel', node.elseLabel());
   },
@@ -244,4 +245,45 @@ $import(IRPrinter.prototype, {
     this.pair('type', node.type());
     this.pair('entity-string', node.entry().value());
   },
+
+  visitMove: function(node) {
+    this.tag('Move', node.location());
+    this.single('from');
+    this.in();
+    this.visit(node.from());
+    this.out();
+    this.single('to');
+    this.in();
+    this.visit(node.to());
+    this.out();
+  },
+
+  visitLoad: function(node) {
+    this.tag('Load', node.location());
+    this.single('from');
+    this.in();
+    this.visit(node.from());
+    this.out();
+    this.single('to');
+    this.in();
+    this.visit(node.to());
+    this.out();
+  },
+
+  visitStore: function(node) {
+    this.tag('Store', node.location());
+    this.single('from');
+    this.in();
+    this.visit(node.from());
+    this.out();
+    this.single('to');
+    this.in();
+    this.visit(node.to());
+    this.out();
+  },
+
+  visitReg: function(node) {
+    this.tag('Reg');
+    this.pair('name', node.name());
+  }
 });

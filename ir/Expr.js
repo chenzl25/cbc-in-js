@@ -22,6 +22,9 @@ Expr.prototype = {
     return false; 
   },
   
+  isReg: function() {
+    return false;
+  },
   /**
    * @return {Object} // ImmediateValue
    */

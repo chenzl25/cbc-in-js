@@ -22,9 +22,13 @@ IRVisitor.prototype = {
     else if (node instanceof ir.Addr) return this.visitAddr(node);
     else if (node instanceof ir.Mem) return this.visitMem(node);
     else if (node instanceof ir.Var) return this.visitVar(node);
-    else if (node instanceof ir.Case) return this.visitCast(node);
+    else if (node instanceof ir.Case) return this.visitCase(node);
     else if (node instanceof ir.Int) return this.visitInt(node);
     else if (node instanceof ir.Str) return this.visitStr(node);
+    else if (node instanceof ir.Move) return this.visitMove(node);
+    else if (node instanceof ir.Load) return this.visitLoad(node);
+    else if (node instanceof ir.Store) return this.visitStore(node);
+    else if (node instanceof ir.Reg) return this.visitReg(node);
     else throw new Error(IRVisitor.errorMsg);
   },
   
@@ -114,6 +118,22 @@ IRVisitor.prototype = {
   },
 
   visitStr: function(node) {
+
+  },
+
+  visitMove: function(node) {
+
+  },
+
+  visitLoad: function(node) {
+
+  },
+
+  visitStore: function(node) {
+
+  },
+
+  visitReg: function(node) {
 
   }
 }

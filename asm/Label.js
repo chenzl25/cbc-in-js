@@ -21,6 +21,10 @@ $import(Label.prototype, {
 
   toSource: function(table) {
     return this._symbol.toSource(table) + ':';
+  },
+
+  toString: function() {
+    return this._symbol.toString();
   }
 });
 

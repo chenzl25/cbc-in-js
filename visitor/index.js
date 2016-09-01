@@ -43,4 +43,9 @@ module.exports.IRGenerator = require('./Generator/IRGenerator');
 module.exports.X86CodeGenerator = require('./Generator/X86CodeGenerator');
 /*=====  End of Generator  ======*/
 
+/*=================================
+=            Transformer          =
+=================================*/
+module.exports.IRFlattener = require('./Transformer/IRFlattener');
+/*=====  End of Generator  ======*/
 
