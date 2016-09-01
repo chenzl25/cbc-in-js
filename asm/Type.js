@@ -41,6 +41,10 @@ Type.prototype.size = function() {
   }
 }
 
+Type.prototype.toString = function() {
+  return this._sym;
+}
+
 Type.INT8 = new Type('INT8');
 Type.INT16 = new Type('INT16');
 Type.INT32 = new Type('INT32');

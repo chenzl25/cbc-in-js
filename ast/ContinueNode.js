@@ -10,6 +10,6 @@ function ContinueNode(loc) {
 };
 
 $import(ContinueNode.prototype, {
-  // accept
+   
 });
 

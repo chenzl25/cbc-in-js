@@ -22,6 +22,6 @@ $import(UnionNode.prototype, {
   definingType: function() {
     return new UnionType(this.name(), this.members(), this.location());
   },
-  // accept
+   
 });
 

@@ -13,5 +13,5 @@ $import(StmtNode.prototype, {
   location: function() {
     return this._location;
   }
-  // accept
+   
 });

@@ -10,5 +10,5 @@ function SuffixOpNode(op, expr) {
 };
 
 $import(SuffixOpNode.prototype, {
-  // accept
+   
 })

@@ -19,5 +19,5 @@ $import(SwitchNode.prototype, {
   cases: function() {
     return this._cases;
   }
-  // accept
+   
 });

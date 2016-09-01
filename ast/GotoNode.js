@@ -14,5 +14,5 @@ $import(GotoNode.prototype, {
   target: function() {
     return this._target;
   }
-  // accept
+   
 });

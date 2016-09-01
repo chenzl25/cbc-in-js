@@ -14,6 +14,6 @@ $import(OpAssignNode.prototype, {
   operator: function() {
     return this._operator;
   }
-  // accept
+   
 });
 

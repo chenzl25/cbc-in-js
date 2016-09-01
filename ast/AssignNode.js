@@ -10,6 +10,6 @@ function AssignNode(lhs, rhs) {
 };
 
 $import(AssignNode.prototype, {
-  // accept
+   
 });
 

@@ -19,5 +19,5 @@ $import(WhileNode.prototype, {
   body: function() {
     return this._body;
   }
-  // accept
+   
 });

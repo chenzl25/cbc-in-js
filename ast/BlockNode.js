@@ -32,5 +32,5 @@ $import(BlockNode.prototype, {
   setScope: function(scope) {
     this._scope = scope;
   }
-  // accept
+   
 });

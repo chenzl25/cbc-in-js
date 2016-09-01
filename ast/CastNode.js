@@ -47,5 +47,5 @@ $import(CastNode.prototype, {
   location: function() {
     return this._typeNode.location();
   },
-  // accept
+   
 });

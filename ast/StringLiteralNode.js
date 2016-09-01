@@ -24,5 +24,4 @@ $import(StringLiteralNode.prototype, {
     // ConstantEntry ent
     this._entry = ent;
   }
-  // accept: function(){}
 });

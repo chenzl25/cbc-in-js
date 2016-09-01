@@ -14,8 +14,6 @@ function IntegerLiteralNode(loc, ref, value) {
 $import(IntegerLiteralNode.prototype, {
   value: function() {
     return this._value;
-  },
-
-  // accept: function(){}
+  }
 });
 

@@ -10,5 +10,5 @@ function LogicalAndNode(left, right) {
 };
 
 $import(LogicalAndNode.prototype, {
-  // accept
+   
 });

@@ -39,5 +39,5 @@ $import(FuncallNode.prototype, {
     return this._expr.location();
   },
 
-  // accept
+   
 });

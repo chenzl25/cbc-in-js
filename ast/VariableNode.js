@@ -74,5 +74,5 @@ $import(VariableNode.prototype, {
     return this._location;
   },
 
-  // accept
+   
 });

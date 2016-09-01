@@ -51,5 +51,5 @@ $import(TypeNode.prototype, {
   toString: function() {
     return this._typeRef.toString();
   }
-  // accept
+   
 });

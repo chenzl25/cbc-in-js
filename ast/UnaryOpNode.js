@@ -40,6 +40,6 @@ $import(UnaryOpNode.prototype, {
   location: function() {
     return this._expr.location();
   }
-  // accept
+   
 });
 

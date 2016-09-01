@@ -18,5 +18,5 @@ $import(DoWhileNode.prototype, {
   cond: function() {
     return this._cond;
   },
-  // accept
+   
 });

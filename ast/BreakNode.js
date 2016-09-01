@@ -10,6 +10,6 @@ function BreakNode(loc) {
 };
 
 $import(BreakNode.prototype, {
-  // accept
+   
 });
 

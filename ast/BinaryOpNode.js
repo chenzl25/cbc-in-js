@@ -46,6 +46,6 @@ $import(BinaryOpNode.prototype, {
   location: function() {
     return this._left.location();
   },
-  // accept
+   
 });
 

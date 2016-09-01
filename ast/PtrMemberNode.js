@@ -39,5 +39,5 @@ $import(PtrMemberNode.prototype, {
     return this._expr.location();
   },
 
-  // accept
+   
 });

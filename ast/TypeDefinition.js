@@ -40,5 +40,5 @@ $import(TypeDefinition.prototype, {
   definingType() {
     throw new Error('TypeDefinition abstract method call: definingType');
   }
-  // accept
+   
 });

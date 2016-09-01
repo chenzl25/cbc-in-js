@@ -56,5 +56,5 @@ $import(DefinedFunction.prototype, {
   localVariables: function() {
     return this._scope.allLocalVariables();
   },
-  // accept
+   
 });

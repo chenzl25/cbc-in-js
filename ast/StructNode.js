@@ -22,6 +22,6 @@ $import(StructNode.prototype, {
   definingType: function() {
     return new StructType(this.name(), this.members(), this.location());
   },
-  // accept
+   
 });
 

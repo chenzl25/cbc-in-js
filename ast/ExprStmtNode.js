@@ -18,6 +18,6 @@ $import(ExprStmtNode.prototype, {
   setExpr: function(expr) {
     this._expr = expr;
   }
-  // accept
+   
 });
 

@@ -39,5 +39,5 @@ $import(CondExprNode.prototype, {
   location: function() {
     return this._cond.location();
   },
-  // accept
+   
 });

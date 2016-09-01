@@ -29,5 +29,5 @@ $import(Switch.prototype, {
   endLabel: function() {
     return this._endLabel;
   },
-  // accept
+   
 })

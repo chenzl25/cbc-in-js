@@ -19,6 +19,6 @@ $import(LabelNode.prototype, {
   stmt: function() {
     return this._stmt;
   },
-  // accept
+   
 });
 

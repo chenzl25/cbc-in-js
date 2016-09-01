@@ -33,5 +33,5 @@ $import(TypedefNode.prototype, {
   definingType: function() {
     return new UserType(this.name(), this.realTypeNode(), this.location());
   }
-  // accept
+   
 });

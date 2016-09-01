@@ -24,5 +24,5 @@ $import(IfNode.prototype, {
   elseBody: function() {
     return this._elseBody;
   }
-  // accept
+   
 });

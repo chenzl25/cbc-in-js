@@ -10,5 +10,5 @@ function LogicalOrNode(left, right) {
 };
 
 $import(LogicalOrNode.prototype, {
-  // accept
+   
 });
