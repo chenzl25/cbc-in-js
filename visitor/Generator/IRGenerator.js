@@ -326,7 +326,7 @@ $import(IRGenerator.prototype, {
   getJumpEntry: function(name) {
     var ent = this._jumpMap.get(name);
     if (ent == null) {
-      ent = new JumpEntry(new Label());
+      ent = new JumpEntry(new Label(name));
       this._jumpMap.set(name, ent);
     }
     return ent;

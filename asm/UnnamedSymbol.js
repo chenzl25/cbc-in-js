@@ -6,7 +6,11 @@ module.exports = UnnamedSymbol;
 $extend(UnnamedSymbol, BaseSymbol);
 function UnnamedSymbol() {
   UnnamedSymbol.super.call(this);
+  this._str = UnnamedSymbol.str + UnnamedSymbol.seq++;
 };
+
+UnnamedSymbol.str = 'L';
+UnnamedSymbol.seq = 0;
 
 $import(UnnamedSymbol.prototype, {
   name: function() {
@@ -22,6 +26,6 @@ $import(UnnamedSymbol.prototype, {
   },
 
   toString: function() {
-    return UnnamedSymbol.super.toString();
+    return this._str;
   }
 });
