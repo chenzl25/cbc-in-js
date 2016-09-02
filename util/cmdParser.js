@@ -11,6 +11,7 @@ function parse(argv) {
   result.isDumpTokens = false;
   result.isDumpAST = false;
   result.isDumpIR = false;
+  result.isDumpIRQ = false;  
   result.isDumpASM = false;
   result.genAssembly = false;
   result.outputPath = '.';
@@ -26,6 +27,9 @@ function parse(argv) {
         break;
       case '--dump-ir':
         result.isDumpIR = true;
+        break;
+      case '--dump-irq':
+        result.isDumpIRQ = true;
         break;
       case '--dump-asm':
         result.isDumpASM = true;

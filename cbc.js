@@ -4,10 +4,12 @@ var Compiler = require('./compiler/Compiler').Compiler;
 var visitor = require('./visitor/index');
 var ASTPrinter = visitor.ASTPrinter;
 var IRPrinter = visitor.IRPrinter;
+var IRQPrinter = visitor.IRQPrinter;
 var cmdParse = require('./util/cmdParser');
 
 var astPrinter = new ASTPrinter();
 var irPrinter = new IRPrinter();
+var irqPrinter = new IRQPrinter();
 var argv = cmdParse(process.argv);
 var cwd = process.cwd();
 
@@ -43,6 +45,11 @@ filesResult.forEach(function(obj) {
 
   if (argv.isDumpIR) {
     irPrinter.print(obj.ir);
+    return;
+  }
+
+  if (argv.isDumpIRQ) {
+    irqPrinter.print(obj.ir);
     return;
   }
 

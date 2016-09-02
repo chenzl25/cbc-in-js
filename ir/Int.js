@@ -33,5 +33,9 @@ $import(Int.prototype, {
    */
   memref: function() {
     throw new Error("must not happen: IntValue#memref");
+  },
+
+  qString: function() {
+    return this._value;
   }
 });

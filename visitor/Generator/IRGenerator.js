@@ -72,7 +72,7 @@ $import(IRGenerator.prototype, {
 
   assign: function(loc, lhs, rhs) {
     // Location loc, Expr lhs, Expr rhs
-    this._stmts.push(new ir.Assign(loc, lhs, rhs));
+    this._stmts.push(new ir.Assign(loc, this.addressOf(lhs), rhs));
   },
 
   /**
@@ -184,6 +184,7 @@ $import(IRGenerator.prototype, {
       this.jump(endLabel);
       this.label(elseLabel);
       this.visit(node.elseBody());
+      this.jump(null, endLabel);
       this.label(endLabel);
     }
     return null;
@@ -249,6 +250,7 @@ $import(IRGenerator.prototype, {
     this.visit(node.body());
     this.popBreak();
     this.popContinue();
+    this.jump(null, contLabel);
     this.label(contLabel);
     this.cjump(node.location(), this.transformExpr(node.cond()), begLabel, endLabel);
     this.label(endLabel);
@@ -262,6 +264,7 @@ $import(IRGenerator.prototype, {
     var endLabel = new Label();
 
     this.visit(node.init());
+    this.jump(null, begLabel);
     this.label(begLabel);
     this.cjump(node.location(), this.transformExpr(node.cond()), 
                   bodyLabel, endLabel);
@@ -271,6 +274,7 @@ $import(IRGenerator.prototype, {
     this.visit(node.body());
     this.popBreak();
     this.popContinue();
+    this.jump(null ,contLabel);
     this.label(contLabel);
     this.visit(node.incr());
     this.jump(begLabel);
@@ -289,8 +293,9 @@ $import(IRGenerator.prototype, {
   },
 
   visitLabelNode: function(node) {
-    this._stmts.push(new ir.LabelStmt(node.location(), 
-                     this.defineLabel(node.name(), node.location())));
+    var label = this.defineLabel(node.name(), node.location());
+    this.jump(label);
+    this._stmts.push(new ir.LabelStmt(node.location(), label));
     if (node.stmt() != null) {
       this.visit(node.stmt());
     }

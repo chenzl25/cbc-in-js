@@ -14,6 +14,7 @@ module.exports.ASMVisitor = require('./AbstractVisitor/ASMVisitor');
 ===============================*/
 module.exports.ASTPrinter = require('./Printer/ASTPrinter');
 module.exports.IRPrinter = require('./Printer/IRPrinter');
+module.exports.IRQPrinter = require('./Printer/IRQPrinter');
 /*=====  End of Printer  ======*/
 
 
@@ -47,5 +48,6 @@ module.exports.X86CodeGenerator = require('./Generator/X86CodeGenerator');
 =            Transformer          =
 =================================*/
 module.exports.IRFlattener = require('./Transformer/IRFlattener');
+module.exports.BasicBlockBuilder = require('./Transformer/BasicBlockBuilder');
 /*=====  End of Generator  ======*/
 

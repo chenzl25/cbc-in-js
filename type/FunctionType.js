@@ -59,9 +59,9 @@ $import(FunctionType.prototype, {
 
   acceptsArgc: function(numArgs) {
     if (this._paramTypes.isVararg()) {
-        return (numArgs >= this._paramTypes.minArgc());
+      return (numArgs >= this._paramTypes.minArgc());
     } else {
-        return (numArgs == this._paramTypes.argc());
+      return (numArgs == this._paramTypes.argc());
     }
   },
 

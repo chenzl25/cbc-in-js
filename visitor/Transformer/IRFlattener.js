@@ -39,13 +39,8 @@ $import(IRFlattener.prototype, {
   visitAssign: function(node) {
     // NOTICE: regR can be Int rather than Reg
     var regR = this.visit(node.rhs());
-    if (node.lhs() instanceof ir.Var) {
-      var addr = node.lhs().addressNode(this.ptr_t());
-      this._stmts.push(new ir.Store(node.location(), regR, addr));
-    } else {
-      var regL = this.visit(node.lhs());
-      this._stmts.push(new ir.Store(node.location(), regR, regL));
-    }
+    var regL = this.visit(node.lhs());
+    this._stmts.push(new ir.Store(node.location(), regR, regL));
   },
 
   visitCJump: function(node) {
@@ -104,7 +99,6 @@ $import(IRFlattener.prototype, {
     for (var arg of args) {
       var t = this.visit(arg);
       regs.push(t);
-      console.log('!!!', t)
     }
     node._args = regs;
     var tmp  = ir.Reg.tmp();
@@ -141,8 +135,7 @@ $import(IRFlattener.prototype, {
   },
 
   visitStr: function(node) {
-    // todo
-    return ;
+    return node;
   },
 
   ptr_t: function() {

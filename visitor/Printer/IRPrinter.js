@@ -130,7 +130,6 @@ $import(IRPrinter.prototype, {
     this.in();
     this.visit(node.cond());
     this.out();
-    console.log( node.thenLabel() , "!!")
     this.pair('thenLabel', node.thenLabel());
     this.pair('elseLabel', node.elseLabel());
   },

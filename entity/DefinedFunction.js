@@ -10,7 +10,8 @@ function DefinedFunction(priv, type, name, params, body) {
   this._params = params;
   this._body = body;
   this._scope; // LocalScope
-  this._ir; // IR = Stmt[]
+  this._ir;    // IR = Stmt[]
+  this._bbs;   // BasicBlock[]
 };
 
 $import(DefinedFunction.prototype, {
@@ -38,8 +39,16 @@ $import(DefinedFunction.prototype, {
     this._ir = ir;
   },
 
+  bbs: function() {
+    return this._bbs;
+  },
+
+  setBBS: function(bbs) {
+    this._bbs = bbs;
+  },
+
   setScope: function(scope) {
-    this._scope = this.scope;
+    this._scope = scope;
   },
 
   lvarScope: function() {
