@@ -979,6 +979,7 @@ Parser.prototype = {
     var refs = []; // TypeRef[]
 
     ref = this.typeref();
+    refs.push(ref);
     while (this.peek().value === ',' && this.peek(1).value !== '...') {
       this.acceptSymbol(',');
       ref = this.typeref();
