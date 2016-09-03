@@ -171,6 +171,7 @@ $import(IRGenerator.prototype, {
     var thenLabel = new Label();
     var elseLabel = new Label();
     var endLabel  = new Label();
+
     var cond = this.transformExpr(node.cond());
     if (node.elseBody() == null) {
       this.cjump(node.location(), cond, thenLabel, endLabel);
@@ -184,7 +185,7 @@ $import(IRGenerator.prototype, {
       this.jump(endLabel);
       this.label(elseLabel);
       this.visit(node.elseBody());
-      this.jump(null, endLabel);
+      this.jump(endLabel);
       this.label(endLabel);
     }
     return null;
@@ -194,7 +195,6 @@ $import(IRGenerator.prototype, {
     var cases = []; // Case[]
     var endLabel = new Label();
     var defaultLabel = endLabel;
-
     var cond = this.transformExpr(node.cond());
     for (var c of node.cases()) {
       if (c.isDefault()) {
@@ -226,6 +226,7 @@ $import(IRGenerator.prototype, {
     var bodyLabel = new Label();
     var endLabel = new Label();
 
+    this.jump(begLabel);
     this.label(begLabel);
     this.cjump(node.location(), this.transformExpr(node.cond()), bodyLabel, endLabel);
     this.label(bodyLabel);
@@ -246,11 +247,12 @@ $import(IRGenerator.prototype, {
 
     this.pushContinue(contLabel);
     this.pushBreak(endLabel);
+    this.jump(begLabel);
     this.label(begLabel);
     this.visit(node.body());
     this.popBreak();
     this.popContinue();
-    this.jump(null, contLabel);
+    this.jump(contLabel);
     this.label(contLabel);
     this.cjump(node.location(), this.transformExpr(node.cond()), begLabel, endLabel);
     this.label(endLabel);
@@ -264,7 +266,7 @@ $import(IRGenerator.prototype, {
     var endLabel = new Label();
 
     this.visit(node.init());
-    this.jump(null, begLabel);
+    this.jump(begLabel);
     this.label(begLabel);
     this.cjump(node.location(), this.transformExpr(node.cond()), 
                   bodyLabel, endLabel);
@@ -274,7 +276,7 @@ $import(IRGenerator.prototype, {
     this.visit(node.body());
     this.popBreak();
     this.popContinue();
-    this.jump(null ,contLabel);
+    this.jump(contLabel);
     this.label(contLabel);
     this.visit(node.incr());
     this.jump(begLabel);

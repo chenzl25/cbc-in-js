@@ -5,6 +5,7 @@ var LabelStmt = require('../ir/LabelStmt');
 var Jump = require('../ir/Jump');
 var CJump = require('../ir/CJump');
 var Return = require('../ir/Return');
+var Switch = require('../ir/Switch');
 module.exports = BBS;
 
 function BBS() {
@@ -18,13 +19,16 @@ function BBS() {
   this._bbs.push(this._exitBlock);  // extra block
   this._entryIndex = 0;
   this._exitIndex  = 1;
-  var tmpSet = new Set();
-  tmpSet.add(2);
+  var tmpSet;
+  tmpSet = new Set(); tmpSet.add(2);
   this._succ.set(this._entryIndex, tmpSet);
+  tmpSet = new Set(); tmpSet.add(0);
+  this._pred.set(2, tmpSet);
 }
 
 BBS.prototype = {
   build: function(stmts) {
+    stmts.push(new Return(null, null)); // dummy Return to avoid no return
     var curBlock = new BasicBlock();
     for (var stmt of stmts) {
       if (stmt instanceof LabelStmt && curBlock.length() > 0) {
@@ -34,9 +38,9 @@ BBS.prototype = {
       curBlock._insts.push(stmt);
     }
     this._bbs.push(curBlock);
-    this.resolveLabelMap();
     this.resolveSuccAndPred();
     this.removeIsolatedBlock();
+    this.compactBlock();
   },
 
   resolveLabelMap: function() {
@@ -50,6 +54,7 @@ BBS.prototype = {
   },
 
   resolveSuccAndPred: function() {
+    this.resolveLabelMap();
     var bb;
     var inst;
     var lastInst;
@@ -58,6 +63,10 @@ BBS.prototype = {
       for (var j = 0; j < bb.length(); j++) {
         var inst = bb.inst(j);
         if (inst instanceof Return) {
+          bb.resize(j+1);
+          break;
+        } else if (inst instanceof Jump) {
+          // multi break statement will cause this case
           bb.resize(j+1);
           break;
         }
@@ -74,8 +83,17 @@ BBS.prototype = {
       } else if (lastInst instanceof Return) {
         this.addSucc(i, this._exitIndex);
         this.addPred(this._exitIndex, i);
+      } else if (lastInst instanceof Switch) {
+        this.addSucc(i, this._labelMap.get(lastInst.defaultLabel().toString()));
+        this.addPred(this._labelMap.get(lastInst.defaultLabel().toString()), i);
+        var cases = lastInst.cases();
+        for (var c of cases) {
+          this.addSucc(i, this._labelMap.get(c.label().toString()));
+          this.addPred(this._labelMap.get(c.label().toString()), i);
+        }
       }
     }
+    this._labelMap = null; // don't need anymore
   },
 
   addSucc: function(i, j) {
@@ -183,16 +201,107 @@ BBS.prototype = {
   },
 
   removeIsolatedBlock: function() {
-    var newBBS = [];
+    var visit = []; // Number[]
+    var queue = []; // Number[]
+    var curIndex;   // Number
+    var succSet;    // Number Set
     for (var i = 0; i < this._bbs.length; i++) {
-      if (this.succ(i).size === 0 && this.pred(i).size === 0) {
-        this._succ.delete(i);
-        this._pred.delete(i);
-      } else {
-        newBBS.push(i);
+      visit.push(false);
+    }
+    // BFS
+    queue.push(this._entryIndex);
+    while(queue.length !== 0) {
+      curIndex = queue.pop();
+      visit[curIndex] = true;
+      succSet = this.succ(curIndex);
+      for (var i of succSet) {
+        if (!visit[i]) queue.push(i);
       }
     }
-    this._bbs = newBBS;
+    // reverse because deleteBlock will move the this._bbs
+    for (var i = visit.length-1; i >= 0 ; i--) {
+      if (!visit[i]) {
+        this.deleteBlock(i);
+      }
+    }
+  },
+
+  isEntryIndex: function(i) {
+    return i === this._entryIndex;
+  },
+
+  isExitIndex: function(i) {
+    return i === this._exitIndex;
+  },
+
+  /**
+   *  three patterns:
+   *
+   *   |     |    \|/
+   *  [ ]   [ ]   [ ] 
+   *  0|1  2/|\n  0|1
+   */
+  
+  pattern1: function(i) {
+    return this.pred(i).size === 1 && this.succ(i).size <= 1;
+  },
+
+  pattern2: function(i) {
+    return this.pred(i).size === 1 && this.succ(i).size > 1;
+  },
+
+  pattern3: function(i) {
+    return this.pred(i).size > 1 && this.succ(i).size <= 1;
+  },
+
+  compactBlock: function() {
+    var workList = [];
+    var visit = [];
+    var curIndex;      // Number
+    var succSet        // Number Set
+    // actually only one blockIndex will be pushed
+    for (var i of this.succ(this._entryIndex)) {
+      workList.push(i); // i should be 2
+      visit[i] = true;
+    }
+
+    while (workList.length !== 0) {
+      curIndex = workList.pop();
+      visit[curIndex] = true;
+      succSet = this.succ(curIndex);
+      if (this.pattern1(curIndex) || this.pattern3(curIndex)) {
+        for (var i of succSet) { // 0 or 1 iterate
+          if (i === curIndex) continue;
+          if ((this.pattern1(i) || this.pattern2(i))
+              && !this.isExitIndex(i)) {
+            this._compactTwoBlock(curIndex, i);
+            workList.map(function(v){return v<i?v:v-1 });
+            for (var j = i; j < visit.length-1; j++) visit[i] = visit[i+1];
+            visit.pop();
+            visit[curIndex] = false;
+            if (!visit[i]) workList.push(curIndex);
+            var tmpSet = this.succ(curIndex);
+            for (var k of tmpSet) visit[k] = true;
+          } else {
+            if (!visit[i]) workList.push(i);
+          }
+        }
+      } else {
+        for (var i of succSet) {
+          if (!visit[i]) workList.push(i);
+        }
+      }
+    }
+  },
+
+  _compactTwoBlock(i, j) {
+    // console.log('compact',i,j)
+    var firstBlock = this.block(i);
+    var secondBlock = this.block(j);
+    firstBlock.deleteInst(firstBlock.length()-1);
+    secondBlock.deleteInst(0);
+    firstBlock.appendInsts(secondBlock.insts());
+    this.deleteBlock(j);
   },
 
   succ: function(i) {
@@ -229,5 +338,14 @@ BBS.prototype = {
       tmpSet.add(v);
     }
     return tmpSet;
+  },
+
+  belongToSet: function(i, s) {
+    for (var j of s) {
+      if (i === j) {
+        return true;
+      }
+    }
+    return false;
   }
 };

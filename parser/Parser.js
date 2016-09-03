@@ -545,11 +545,11 @@ Parser.prototype = {
     var body; // BlockNode
     this.acceptKeyWord('default');
     this.acceptSymbol(':');
-    body = this.caseBody();
+    body = this.caseBody(true);
     return new ast.CaseNode(body.location(), [], body);
   },
 
-  caseBody: function() {
+  caseBody: function(isDefualtBody) {
     var stmts = []; // StmtNode[]
     var s;     // StmtNode
     var handle;
@@ -564,6 +564,9 @@ Parser.prototype = {
       // if stmt is ';' then s == null
       if (s) stmts.push(s);
       handle = this.getHandle();
+    }
+    if (isDefualtBody) {
+      stmts.push(new ast.BreakNode(null));
     }
     if (! (stmts[stmts.length - 1] instanceof ast.BreakNode)) {
       throw new Error("missing break statement at the last of case clause");
