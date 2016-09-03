@@ -11,6 +11,18 @@ BasicBlock.prototype = {
     return this._insts;
   },
 
+  inst: function(i) {
+    return this._insts[i];
+  },
+
+  length: function() {
+    return this._insts.length;
+  },
+
+  resize: function(len) {
+    this._insts.length = len;
+  },
+
   insertBefore: function(j, inst) {
     if (j < 0) j = 0;
     if (j >= this._insts.length) j = this._insts.length-1;
