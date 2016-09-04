@@ -32,6 +32,10 @@ UniqueQueue.prototype = {
     return this._queue.pop();
   },
 
+  shift: function() {
+    return this._queue.shift();
+  },
+
   size: function() {
     return this._queue.length;
   },

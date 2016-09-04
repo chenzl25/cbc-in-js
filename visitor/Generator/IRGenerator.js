@@ -305,7 +305,7 @@ $import(IRGenerator.prototype, {
   },
 
   visitGotoNode: function(node) {
-    this.jump(node.location(), this.referLabel(node.target()));
+    this.jump(node.location(), this.referLabel(node.target(), node.location()));
   },
 
   visitReturnNode: function(node) {
@@ -324,16 +324,17 @@ $import(IRGenerator.prototype, {
     return ent._label;
   },
 
-  referLabel: function(name) {
-    var ent = this.getJumpEntry(name);
+  referLabel: function(name, loc) {
+    var ent = this.getJumpEntry(name, loc);
     ent._numRefered++;
     return ent._label;
   },
 
-  getJumpEntry: function(name) {
+  getJumpEntry: function(name, loc) {
     var ent = this._jumpMap.get(name);
     if (ent == null) {
       ent = new JumpEntry(new Label(name));
+      ent._location = loc;
       this._jumpMap.set(name, ent);
     }
     return ent;

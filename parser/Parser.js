@@ -596,6 +596,7 @@ Parser.prototype = {
 
     t = this.acceptKeyWord('goto');
     name = this.acceptIdentifier().value;
+    this.acceptSymbol(';');
     return new ast.GotoNode(this.location(t), name);
   },
 

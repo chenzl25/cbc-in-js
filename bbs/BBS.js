@@ -1,5 +1,6 @@
 var $extend = require('../util/extend');
 var $import = require('../util/import');
+var SetOp   = require('../util/SetOp');
 var BasicBlock = require('./BasicBlock');
 var LabelStmt = require('../ir/LabelStmt');
 var Jump = require('../ir/Jump');
@@ -10,8 +11,11 @@ module.exports = BBS;
 
 function BBS() {
   this._bbs = []; // BasicBlock[]
-  this._succ = new Map(); // Number -> Number Set
-  this._pred = new Map(); // Number -> Number Set
+  this._succ = new Map(); // Number -> {Number}
+  this._pred = new Map(); // Number -> {Number}
+  this._allEbbs = new Map();  // Number -> {Number}
+  this._allDoms = new Map();  // Number -> {Number}
+  this._addIDoms = new Map(); // Number -> Number
   this._labelMap = new Map(); // String -> Number
   this._entryBlock = new BasicBlock();
   this._exitBlock = new BasicBlock();
@@ -41,6 +45,9 @@ BBS.prototype = {
     this.resolveSuccAndPred();
     this.removeIsolatedBlock();
     this.compactBlock();
+    this._allEbbs  = this.buildAllEbbs();
+    this._allDoms  = this.buildAllDoms();
+    this._addIDoms = this.buildAllIDoms();
   },
 
   resolveLabelMap: function() {
@@ -151,8 +158,8 @@ BBS.prototype = {
       this.removePred(i, i);
       this.removeSucc(i, i);
     }
-    var predSet = this.cloneSet(this.pred(i));
-    var succSet = this.cloneSet(this.succ(i));
+    var predSet = SetOp.cloneSet(this.pred(i));
+    var succSet = SetOp.cloneSet(this.succ(i));
 
     for (var j of predSet) {
       // Succ(j) = (Succ(j) - {i}) U Succ(i)
@@ -181,7 +188,7 @@ BBS.prototype = {
 
     // // adjust data structures
     for (var j = 0; j < this._bbs.length; j++) {
-      succSet = this.cloneSet(this.succ(j));
+      succSet = SetOp.cloneSet(this.succ(j));
       for (var k of succSet) {
         if (k > i) {
           // Succ(j) = (Succ(j) - {k}) U {k-1}
@@ -189,7 +196,7 @@ BBS.prototype = {
           this.addSucc(j, k-1);
         }
       }
-      predSet = this.cloneSet(this.pred(j));
+      predSet = SetOp.cloneSet(this.pred(j));
       for (var k of predSet) {
         if (k > i) {
           // Pred(j) = (Pred(j) - {k}) U {k-1}
@@ -260,13 +267,14 @@ BBS.prototype = {
     var curIndex;      // Number
     var succSet        // Number Set
     // actually only one blockIndex will be pushed
+    // entry block should not be compact
     for (var i of this.succ(this._entryIndex)) {
       workList.push(i); // i should be 2
       visit[i] = true;
     }
 
     while (workList.length !== 0) {
-      curIndex = workList.pop();
+      curIndex = workList.shift();
       visit[curIndex] = true;
       succSet = this.succ(curIndex);
       if (this.pattern1(curIndex) || this.pattern3(curIndex)) {
@@ -304,6 +312,158 @@ BBS.prototype = {
     this.deleteBlock(j);
   },
 
+  /**
+   * @return {Object} // Number -> {Number}
+   */
+  
+  buildAllEbbs: function() {
+    var succSet = this.succ(this._entryIndex);
+    var predSet = this.pred(this._entryIndex);
+    var ebbRoots = [this._entryIndex];
+    var cur;
+    var result = new Map; 
+    while (ebbRoots.length !== 0) {
+      cur = ebbRoots.pop();
+      if (!result.has(cur)) {
+        result.set(cur, this.buildEbb(cur, ebbRoots));
+      }
+    }
+    return result
+  },
+
+  buildEbb: function(r, ebbRoots) {
+    var Ebb = new Set();
+    this.addBbs(r, Ebb, ebbRoots);
+    return Ebb;
+  },
+
+  /**
+   * @param  {Number} r
+   * @param  {Object} Ebb // {Number}
+   * @param  {Object} ebbRoots // Number[]
+   * @return {Object} // {Number}
+   */
+
+  addBbs: function(r, Ebb, ebbRoots) {
+    var succSet = this.succ(r);
+    var predSet = this.pred(r);
+    Ebb.add(r);
+    for (var x of succSet) {
+      if (this.pred(x).size === 1 && !Ebb.has(x)) {
+        this.addBbs(x, Ebb, ebbRoots);
+      } else if (ebbRoots.indexOf(x) === -1) {
+        ebbRoots.push(x);
+      }
+    }
+  },
+
+  /**
+   * @brief {return depthFirst order basic block index array}
+   */
+  
+  depthFirstSeq: function() {
+    var seq = [];
+    var visit = [];
+    this._depthFirstSeq(this._entryIndex, seq, visit);
+    return seq;
+  },
+
+  _depthFirstSeq: function(index ,seq, visit) {
+    seq.push(index);
+    visit[index] = true;
+    for (var s of this.succ(index)) {
+      if (!visit[s]) this._depthFirstSeq(s, seq, visit);
+    }
+  },
+
+  /**
+   * compute dominate relation
+   * @return {Object} // Number -> {Number}
+   */
+  
+  buildAllDoms: function() {
+    var allDoms = new Map(); // Number -> {Number}
+    var change = true;
+    var entryIndex = this._entryIndex;
+    // init
+    allDoms.set(entryIndex, (new Set).add(entryIndex));
+    // seq: depth First order without entryIndex
+    var seq = this.depthFirstSeq().filter(function(v){return v !== entryIndex});
+    var wholeSet = this.wholeIndexSet();
+
+    for (var i of seq) {
+      allDoms.set(i, SetOp.cloneSet(wholeSet));
+    }
+    // iterate
+    var counter = 0;
+    while (change) {
+      change = false;
+      for (var cur of seq) {
+        var tmpSet = SetOp.cloneSet(wholeSet);
+        for (var p of this.pred(cur)) {
+          tmpSet = SetOp.interset(tmpSet, allDoms.get(p));
+        }
+        tmpSet.add(cur);
+        if (!SetOp.equal(tmpSet, allDoms.get(cur))) {
+          change = true;
+          allDoms.set(cur, tmpSet);
+        }
+
+      }
+    }
+    return allDoms;
+  },
+
+  /**
+   * compute immediate dominate relation
+   * @return {Object} // Number -> Number
+   */
+
+  buildAllIDoms: function() {
+    var allIDoms = new Map(); // Number -> Number
+    var change = true;
+    var entryIndex = this._entryIndex;
+    var tmpMap = new Map();
+    var tmpSet;
+    // init
+    for (var i = 0; i < this._bbs.length; i++) {
+      tmpSet = this._allDoms.get(i);
+      tmpSet.delete(i);
+      tmpMap.set(i, tmpSet);
+    }
+    // seq: depth First order without entryIndex
+    var seq = this.depthFirstSeq().filter(function(v){return v !== entryIndex});
+    var wholeSet = this.wholeIndexSet();
+    for (var cur of seq) {
+      var tmpSet1 = SetOp.cloneSet(tmpMap.get(cur));
+      for (var s of tmpSet1) {
+        var tmpSet2 = SetOp.minus(tmpMap.get(cur), (new Set).add(s));
+        for (var t of tmpSet2) {
+          if (tmpMap.get(s).has(t)) {
+            tmpMap.get(cur).delete(t);
+          }
+        }
+      }
+    }
+    for (var i of seq) {
+      tmpSet = tmpMap.get(i);
+      if (tmpSet.size !== 1) throw new Error('#buildAllIDoms bug');
+      for (var j of tmpSet) { 
+        // tmpSet.get(seq) only has 1 item
+        allIDoms.set(i, j);
+      }
+    }
+    return allIDoms;
+  },
+
+  wholeIndexSet: function() {
+    var wholeSet = new Set;
+    for (var i = 0; i < this._bbs.length; i++) {
+      wholeSet.add(i);
+    }
+    return wholeSet;
+  },
+
   succ: function(i) {
     if (this._succ.has(i)) {
       return this._succ.get(i);
@@ -330,22 +490,5 @@ BBS.prototype = {
 
   blocks: function() {
     return this._bbs;
-  },
-
-  cloneSet: function(s) {
-    var tmpSet = new Set();
-    for (var v of s) {
-      tmpSet.add(v);
-    }
-    return tmpSet;
-  },
-
-  belongToSet: function(i, s) {
-    for (var j of s) {
-      if (i === j) {
-        return true;
-      }
-    }
-    return false;
   }
 };
