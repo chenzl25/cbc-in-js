@@ -5,11 +5,13 @@ var visitor = require('./visitor/index');
 var ASTPrinter = visitor.ASTPrinter;
 var IRPrinter = visitor.IRPrinter;
 var IRQPrinter = visitor.IRQPrinter;
+var BBSPrinter = visitor.BBSPrinter;
 var cmdParse = require('./util/cmdParser');
 
 var astPrinter = new ASTPrinter();
 var irPrinter = new IRPrinter();
 var irqPrinter = new IRQPrinter();
+var bbsPrinter = new BBSPrinter();
 var argv = cmdParse(process.argv);
 var cwd = process.cwd();
 
@@ -50,6 +52,11 @@ filesResult.forEach(function(obj) {
 
   if (argv.isDumpIRQ) {
     irqPrinter.print(obj.ir);
+    return;
+  }
+
+  if (argv.isDumpBBS) {
+    bbsPrinter.print(obj.ir);
     return;
   }
 

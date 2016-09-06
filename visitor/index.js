@@ -15,6 +15,7 @@ module.exports.ASMVisitor = require('./AbstractVisitor/ASMVisitor');
 module.exports.ASTPrinter = require('./Printer/ASTPrinter');
 module.exports.IRPrinter = require('./Printer/IRPrinter');
 module.exports.IRQPrinter = require('./Printer/IRQPrinter');
+module.exports.BBSPrinter = require('./Printer/BBSPrinter');
 /*=====  End of Printer  ======*/
 
 

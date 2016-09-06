@@ -19,7 +19,7 @@ $import(BasicBlockBuilder.prototype, {
       var bbs = new BBS();
       bbs.build(f.ir());
       f.setBBS(bbs);
-      console.log(bbs);
+      // console.log(bbs);
     }
   }
 });
