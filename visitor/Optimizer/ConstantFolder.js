@@ -74,8 +74,14 @@ $import(ConstantFolder.prototype, {
         case Op.ADD: return new Int(type, lv + rv);
         case Op.SUB: return new Int(type, lv - rv);
         case Op.MUL: return new Int(type, lv * rv);
-        case Op.S_DIV: return new Int(type, lv / rv);
-        case Op.U_DIV: return new Int(type, lv / rv);
+        case Op.S_DIV: 
+          if (rv === 0) {this.warn('divided by zero'); return null;}
+          if (lv / rv % 1 !== 0) return null;
+          return new Int(type, lv / rv);
+        case Op.U_DIV: 
+          if (rv === 0) {this.warn('divided by zero'); return null;}
+          if (lv / rv % 1 !== 0) return null;
+          return new Int(type, lv / rv);
         case Op.S_MOD: return new Int(type, lv % rv);
         case Op.U_MOD: return new Int(type, lv % rv);
         case Op.BIT_AND: return new Int(type, lv & rv);
@@ -119,7 +125,7 @@ $import(ConstantFolder.prototype, {
 
     if (node.left() instanceof Int &&
         node.right() instanceof Bin &&
-        node.op() === node.left().op()) {
+        node.op() === node.right().op()) {
       var tem = node.right();
       node._right = node.left();
       node._left = tem;
@@ -192,4 +198,8 @@ $import(ConstantFolder.prototype, {
   visitStr: function(node) {
     // no way to fold
   },
+
+  warn: function(msg) {
+    console.log('warn: ',msg);
+  }
 });
