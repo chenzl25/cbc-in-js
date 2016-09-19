@@ -86,3 +86,69 @@ Op.internUnary = function(op, isSigned) {
     throw new Error("unknown unary op: " + op);
   }
 }
+
+Op.antiInternBinary = function(op) {
+  switch (op) {
+    case Op.ADD:
+      return '+';
+    case Op.SUB:
+      return '-';
+    case Op.MUL:
+      return '*';
+    case Op.S_DIV:
+      return '/';
+    case Op.U_DIV:
+      return '/';
+    case Op.S_MOD:
+      return '%';
+    case Op.U_MOD:
+      return '%';
+    case Op.BIT_AND:
+      return '&';
+    case Op.BIT_OR:
+      return '|';
+    case Op.BIT_XOR:
+      return '^';
+    case Op.BIT_LSHIFT:
+      return '<<';
+    case Op.ARITH_RSHIFT:
+      return '>>';
+    case Op.BIT_RSHIFT:
+      return '>>';
+    case Op.EQ:
+      return '==';
+    case Op.NEQ:
+      return '!=';
+    case Op.S_LT:
+      return '<';
+    case Op.U_LT:
+      return '<';
+    case Op.S_LTEQ:
+      return '<=';
+    case Op.U_LTEQ:
+      return '<=';
+    case Op.S_GT:
+      return '>';
+    case Op.U_GT:
+      return '>';
+    case Op.S_GTEQ:
+      return '>=';
+    case Op.U_GTEQ:
+      return '>=';
+    default:
+      throw new Error("unknown binary op: " + op);
+  }
+}
+
+Op.antiInternUnary = function(op) {
+  switch (op) {
+    case Op.UMINUS:
+      return '-';
+    case Op.BIT_NOT:
+      return '~';
+    case Op.NOT:
+      return '!';
+    default:
+      throw new Error("unknown unary op: " + op);
+  }
+}

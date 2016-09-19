@@ -39,8 +39,8 @@ $import(IRFlattener.prototype, {
   visitAssign: function(node) {
     // NOTICE: regR can be Int rather than Reg
     var regR = this.visit(node.rhs());
-    var regL = this.visit(node.lhs());
-    this._stmts.push(new ir.Store(node.location(), regR, regL));
+    var regL = this.visit(node.lhs()); // regL can be Mem
+    this._stmts.push(new ir.Move(node.location(), regR, regL));
   },
 
   visitCJump: function(node) {
@@ -107,27 +107,25 @@ $import(IRFlattener.prototype, {
   },
 
   visitAddr: function(node) {
-    var tmp  = ir.Reg.tmp();
-    this._stmts.push(new ir.Move(null, node, tmp));
-    return tmp;
+    node._expr = this.visit(node.expr());
+    // TODO: add node._expr info to Reg
+    return node;
   },
 
   visitMem: function(node) {
     node._expr = this.visit(node.expr());
-    var tmp  = ir.Reg.tmp();
-    this._stmts.push(new ir.Move(null, node, tmp));
-    return tmp;
+    // TODO: add node_expr info to Reg
+    return node;
   },
 
   visitVar: function(node) {
-    var tmp = ir.Reg.tmp();
-    var addr = node.addressNode(this.ptr_t());
-    this._stmts.push(new ir.Load(null, tmp , addr));
+    var tmp = new ir.Reg(node.name());
+    // TODO: add Var info to Reg
     return tmp
   },
 
   visitCase: function(node) {
-    // todo
+    // never 
   },
 
   visitInt: function(node) {

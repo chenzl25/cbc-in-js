@@ -166,11 +166,11 @@ $import(IRQPrinter.prototype, {
   //
   
   visitUni: function(node) {
-    return node.op() + ' ' + this.visit(node.expr());
+    return ir.Op.antiInternUnary(node.op()) + ' ' + this.visit(node.expr());
   },
 
   visitBin: function(node) {
-    return this.visit(node.left()) + ' ' + node.op() + ' ' + this.visit(node.right());
+    return this.visit(node.left()) + ' ' + ir.Op.antiInternBinary(node.op()) + ' ' + this.visit(node.right());
   },
 
   visitCall: function(node) {
@@ -198,7 +198,7 @@ $import(IRQPrinter.prototype, {
   },
 
   visitVar: function(node) {
-    throw new Error('impossible case');
+    return node.name();
   },
 
   visitCase: function(node) {
@@ -206,7 +206,7 @@ $import(IRQPrinter.prototype, {
   },
 
   visitInt: function(node) {
-    return node.value();
+    return node.value().toString();
   },
 
   visitStr: function(node) {

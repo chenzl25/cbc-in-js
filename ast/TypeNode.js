@@ -49,7 +49,6 @@ $import(TypeNode.prototype, {
   },
 
   toString: function() {
-    return this._typeRef.toString();
+    return (this._typeRef && this._typeRef.toString()) || this._type.toString();
   }
-   
 });
