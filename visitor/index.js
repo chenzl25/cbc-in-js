@@ -34,7 +34,7 @@ module.exports.TypeChecker = require('./SemanticChecker/TypeChecker');
 ================================*/
 
 module.exports.ConstantFolder = require('./Optimizer/ConstantFolder');
-
+module.exports.ValueNumber = require('./Optimizer/ValueNumber');
 /*=====  End of Optimizer  ======*/
 
 

@@ -44,11 +44,12 @@ Compiler.prototype = {
         this.semanticAnalyze(obj.ast, typeTable);
         irGenerator = new visitor.IRGenerator(typeTable);
         obj.ir = irGenerator.generate(obj.ast);
-        this.Optimize(obj.ir);
+        this.OptimizeTreeIR(obj.ir);
         irFlattener = new visitor.IRFlattener(typeTable);
         irFlattener.flatten(obj.ir);
         basicBlockBuilder = new visitor.BasicBlockBuilder();
         basicBlockBuilder.build(obj.ir);
+        this.OptimizeBBS(obj.ir);
         // codeGenerator = this.platform.codeGenerator();
         // obj.asm = codeGenerator.generate(obj.ir);
         filesResult.push(obj);
@@ -76,8 +77,12 @@ Compiler.prototype = {
     typeChecker.check(ast);
   },
 
-  Optimize: function(ir) {
+  OptimizeTreeIR: function(ir) {
     (new visitor.ConstantFolder()).optimize(ir);
+  },
+
+  OptimizeBBS: function(ir) {
+    (new visitor.ValueNumber()).optimize(ir);
   }
 }
 

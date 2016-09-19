@@ -152,3 +152,21 @@ Op.antiInternUnary = function(op) {
       throw new Error("unknown unary op: " + op);
   }
 }
+
+Op.isComm = function(op) {
+  switch (op) {
+    case Op.ADD:
+    case Op.SUB:
+    case Op.MUL:
+    case Op.S_DIV:
+    case Op.U_DIV:
+    case Op.BIT_AND:
+    case Op.BIT_OR:
+    case Op.BIT_XOR:
+    case Op.EQ:
+    case Op.NEQ:
+      return true;
+    default:
+      return false;
+  }
+}
