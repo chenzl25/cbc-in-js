@@ -32,9 +32,9 @@ module.exports.TypeChecker = require('./SemanticChecker/TypeChecker');
 /*================================
 =            Optimizer           =
 ================================*/
-
 module.exports.ConstantFolder = require('./Optimizer/ConstantFolder');
 module.exports.ValueNumber = require('./Optimizer/ValueNumber');
+module.exports.CopyPropagation = require('./Optimizer/CopyPropagation');
 /*=====  End of Optimizer  ======*/
 
 

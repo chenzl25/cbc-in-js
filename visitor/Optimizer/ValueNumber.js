@@ -88,14 +88,18 @@ ValueNumber.prototype = {
 
   remove: function(bbs, bb, hashSeq, name) {
     for (var i = 0; i < hashSeq.length; i++) {
-      for (var j = 0; j < hashSeq[i].length; j++) {
+      for (var j = 0; j < hashSeq[i].length;) {
         if (bb.inst(hashSeq[i][j]).from() instanceof ir.Bin &&
-            (bb.inst(hashSeq[i][j]).from().left().name() === name ||
-             bb.inst(hashSeq[i][j]).from().right().name() === name)) {
+            ((bb.inst(hashSeq[i][j]).from().left() instanceof ir.Reg &&
+              bb.inst(hashSeq[i][j]).from().left().name() === name) ||
+             (bb.inst(hashSeq[i][j]).from().right() instanceof ir.Reg &&
+              bb.inst(hashSeq[i][j]).from().right().name() === name))) {
           hashSeq[i].splice(j);
         } else if (bb.inst(hashSeq[i][j]).from() instanceof ir.Uni &&
                    bb.inst(hashSeq[i][j]).from().expr().name() === name) {
           hashSeq[i].splice(j);
+        } else {
+          j++;
         }
       }
     }
