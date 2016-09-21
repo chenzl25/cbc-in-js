@@ -22,7 +22,7 @@ function union(s1, s2) {
     newSet.add(tmp1);
   }
   for (var tmp2 of s2) {
-    newSet.add(tmp1);
+    newSet.add(tmp2);
   }
   return newSet;
 }

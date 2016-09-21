@@ -24,5 +24,5 @@ $import(Reg.prototype, {
 
   name: function() {
     return this._name;
-  },
+  }
 });

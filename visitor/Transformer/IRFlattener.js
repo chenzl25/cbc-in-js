@@ -31,7 +31,31 @@ $import(IRFlattener.prototype, {
   /*================================
   =            override            =
   ================================*/
-  
+  visit: function(node, inBin) {
+    if (inBin !== true) inBin = false;
+    if (node instanceof ir.ExprStmt) return this.visitExprStmt(node, inBin);
+    else if (node instanceof ir.Assign) return this.visitAssign(node, inBin);
+    else if (node instanceof ir.CJump) return this.visitCJump(node, inBin);
+    else if (node instanceof ir.Jump) return this.visitJump(node, inBin);
+    else if (node instanceof ir.Switch) return this.visitSwitch(node, inBin);
+    else if (node instanceof ir.LabelStmt) return this.visitLabelStmt(node, inBin);
+    else if (node instanceof ir.Return) return this.visitReturn(node, inBin);
+    else if (node instanceof ir.Uni) return this.visitUni(node, inBin);
+    else if (node instanceof ir.Bin) return this.visitBin(node, inBin);
+    else if (node instanceof ir.Call) return this.visitCall(node, inBin);
+    else if (node instanceof ir.Addr) return this.visitAddr(node, inBin);
+    else if (node instanceof ir.Mem) return this.visitMem(node, inBin);
+    else if (node instanceof ir.Var) return this.visitVar(node, inBin);
+    else if (node instanceof ir.Case) return this.visitCase(node, inBin);
+    else if (node instanceof ir.Int) return this.visitInt(node, inBin);
+    else if (node instanceof ir.Str) return this.visitStr(node, inBin);
+    else if (node instanceof ir.Move) return this.visitMove(node, inBin);
+    else if (node instanceof ir.Load) return this.visitLoad(node, inBin);
+    else if (node instanceof ir.Store) return this.visitStore(node, inBin);
+    else if (node instanceof ir.Reg) return this.visitReg(node, inBin);
+    else throw new Error(IRVisitor.errorMsg);
+  },
+
   visitExprStmt: function(node) {
     this.visit(node.expr());
   },
@@ -44,7 +68,7 @@ $import(IRFlattener.prototype, {
   },
 
   visitCJump: function(node) {
-    node._cond = this.visit(node.cond());
+    node._cond = this.visit(node.cond(), true);
     this._stmts.push(node);
   },
 
@@ -53,7 +77,7 @@ $import(IRFlattener.prototype, {
   },
 
   visitSwitch: function(node) {
-    node._cond = this.visit(node.cond());
+    node._cond = this.visit(node.cond(), true);
     this.visitExprs(node.cases());
     this._stmts.push(node);
   },
@@ -63,8 +87,10 @@ $import(IRFlattener.prototype, {
   },
 
   visitReturn: function(node) {
-    var tmp = this.visit(node.expr());
-    node._expr = tmp;
+    if (node.expr()) {
+      var tmp = this.visit(node.expr(), true);
+      node._expr = tmp;
+    }
     this._stmts.push(node);
   },
 
@@ -79,12 +105,18 @@ $import(IRFlattener.prototype, {
     return tmp;
   },
 
-  visitBin: function(node) {
-    node._left = this.visit(node.left());
-    node._right = this.visit(node.right());
-    var tmp  = ir.Reg.tmp();
-    this._stmts.push(new ir.Move(null, node, tmp));
-    return tmp;
+  visitBin: function(node, inBin) {
+    if (inBin) {
+      node._left = this.visit(node.left(), true);
+      node._right = this.visit(node.right(), true);
+      var tmp  = ir.Reg.tmp();
+      this._stmts.push(new ir.Move(null, node, tmp));
+      return tmp;
+    } else {
+      node._left = this.visit(node.left(), true);
+      node._right = this.visit(node.right(), true);
+      return node;
+    }
   },
 
   visitCall: function(node) {

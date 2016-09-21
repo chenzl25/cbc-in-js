@@ -45,9 +45,9 @@ BBS.prototype = {
     this.resolveSuccAndPred();
     this.removeIsolatedBlock();
     this.compactBlock();
-    this._allEbbs  = this.buildAllEbbs();
-    this._allDoms  = this.buildAllDoms();
-    this._addIDoms = this.buildAllIDoms();
+    // this._allEbbs  = this.buildAllEbbs();
+    // this._allDoms  = this.buildAllDoms();
+    // this._addIDoms = this.buildAllIDoms();
   },
 
   resolveLabelMap: function() {
@@ -283,13 +283,17 @@ BBS.prototype = {
           if ((this.pattern1(i) || this.pattern2(i))
               && !this.isExitIndex(i)) {
             this._compactTwoBlock(curIndex, i);
+            // ----- adjust index --------------------------
             workList.map(function(v){return v<i?v:v-1 });
+            curIndex = curIndex < i ? curIndex: curIndex - 1;
+            // ---------------------------------------------
             for (var j = i; j < visit.length-1; j++) visit[i] = visit[i+1];
             visit.pop();
             visit[curIndex] = false;
             if (!visit[i]) workList.push(curIndex);
             var tmpSet = this.succ(curIndex);
             for (var k of tmpSet) visit[k] = true;
+            break;
           } else {
             if (!visit[i]) workList.push(i);
           }
@@ -307,7 +311,7 @@ BBS.prototype = {
     var firstBlock = this.block(i);
     var secondBlock = this.block(j);
     firstBlock.deleteInst(firstBlock.length()-1);
-    secondBlock.deleteInst(0);
+    secondBlock.deleteInst(0); 
     firstBlock.appendInsts(secondBlock.insts());
     this.deleteBlock(j);
   },
