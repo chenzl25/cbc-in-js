@@ -1,0 +1,54 @@
+int fib(int m) {
+  // int a;
+  // int b;
+  // switch(a) {
+  //    case 1:
+  //    case 2:
+  //      a++;
+  //      break;
+  //    case 3:
+  //      b++;
+  //      break;
+  //   case 4:
+  //     b++;
+  //     break;
+  //     break;
+  //     break;
+  //     break;
+  //     a++;
+  //     break;
+  //   default:
+  //      a++;
+  //  }
+
+  // int f0 = 0, f1 = 1, f2, i;
+  // if (m <= 1) {
+  //   return m;
+  // } else {
+  //   for (i = 2; i <=m; i++) {
+  //     f2 = f0 + f1;
+  //     f0 = f1;
+  //     f1 = f2;
+  //   }
+  //   return f2;
+  // }
+
+  // int* a;
+  // int* b;
+  // int c;
+  // c = *(a) + *b + *(a);
+
+  // int a = 1, b = 2, c;
+  // c = a + c;
+
+  // if (!z) {
+  //   x = !z;
+  //   c = x & y;
+  // }
+  // if (x & y) {
+  //   c = 1;
+  // }
+}
+// int add(void) {
+
+// }

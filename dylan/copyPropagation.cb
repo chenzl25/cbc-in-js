@@ -1,0 +1,32 @@
+int localCopyPropagation(void) {
+  int a, b, c, d;
+  b = a;
+  c = b + 1;
+  d = b;
+  b = d + c;
+  b = d;
+}
+
+void globalCopyPropagation(void) {
+  int a, b, c, d, e, f, g, h;
+  c = a + b;
+  d = c;
+  e = d * d;
+  do {
+    f = a + c;
+    g = e;
+    a = g + d;
+    if (a < c) {
+      h = g + 1;
+    } else {
+      f = d - g;
+      if (f > a) {
+
+      } else {
+        c = 2;
+        return;
+      }
+    }
+    b = g * a;
+  } while(h < f);
+}

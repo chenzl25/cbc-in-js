@@ -1,0 +1,13 @@
+void valueNumber(void) {
+  int a, b, c, x, y, z;
+  a = x | y;
+  x = 1;
+  y = 2;
+  b = x | y;
+  b = x | y;
+  b = y | z;
+  c = x | z;
+
+
+  a = x | y | z;
+}

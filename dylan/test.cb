@@ -1,0 +1,47 @@
+import stdio;
+ 
+int ggg = 3;
+char* str = "hello";
+
+
+void f(void) {
+  ggg+=1;
+}
+
+int hehe(int* p) {
+  return *p;
+}
+
+int main(int argc, char **argv) {
+   int a = 1, b = 2;
+   int* p = &a;
+   if (a > b) {
+     a += b;
+   } else {
+     a -= b;
+   }
+   while(a > b) {
+     a;
+   }
+   do {
+     a;
+   } while(a>0);
+   for (a = 0; a < 1; a++) {
+      a;
+   }
+   switch(a) {
+     case 1:
+     case 2:
+       a;
+       break;
+     case 3:
+       b;
+       break;
+     default:
+       a;
+       break;
+   }
+   f();
+   a = hehe(*p);
+   return 0;
+}

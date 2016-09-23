@@ -1,0 +1,7 @@
+int constantPropagation(void) {
+  int a, b, c, d;
+  a = 1;
+  b = a;
+  a = c + 1;
+  b = a + 1;
+}
