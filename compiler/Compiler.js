@@ -84,6 +84,7 @@ Compiler.prototype = {
   OptimizeBBS: function(ir) {
     (new visitor.ValueNumber()).optimize(ir);
     (new visitor.CopyPropagation()).optimize(ir);
+    (new visitor.ConstantPropagation()).optimize(ir);
   }
 }
 

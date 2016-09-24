@@ -233,6 +233,14 @@ BBS.prototype = {
     }
   },
 
+  entryIndex: function() {
+    return this._entryIndex;
+  },
+
+  exitIndex: function() {
+    return this._exitIndex;
+  },
+
   isEntryIndex: function(i) {
     return i === this._entryIndex;
   },

@@ -1,0 +1,13 @@
+int constantPropagation(void) {
+  int a, b, c, d;
+  c = 1;
+  b = c;
+  if (1 < 2) {
+    a = 1;
+    d = a;
+  } else {
+    a = 1;
+    d = a;
+  }
+  b = a;
+}

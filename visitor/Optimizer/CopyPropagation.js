@@ -145,7 +145,7 @@ CopyPropagation.prototype = {
           }
         }
       }
-    }
+    } // end of while
 
     // apply the analysis
     for (var i = 0; i < bbs._bbs.length; i++) {

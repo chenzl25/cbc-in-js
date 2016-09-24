@@ -139,8 +139,9 @@ $import(IRFlattener.prototype, {
   },
 
   visitAddr: function(node) {
-    node._expr = this.visit(node.expr());
-    // TODO: add node._expr info to Reg
+    // TODO change expr() to entity()
+    node._entity = this.visit(node.entity());
+    // TODO: add node._entity info to Reg
     return node;
   },
 

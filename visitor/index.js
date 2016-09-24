@@ -6,6 +6,7 @@ module.exports.IRVisitor  = require('./AbstractVisitor/IRVisitor');
 module.exports.EntityVistor = require('./AbstractVisitor/EntityVisitor');
 module.exports.DeclarationVisitor = require('./AbstractVisitor/DeclarationVisitor');
 module.exports.ASMVisitor = require('./AbstractVisitor/ASMVisitor');
+module.exports.BlockVisitor = require('./AbstractVisitor/BlockVisitor');
 /*=====  End of Abstract Visitor  ======*/
 
 
@@ -35,6 +36,7 @@ module.exports.TypeChecker = require('./SemanticChecker/TypeChecker');
 module.exports.ConstantFolder = require('./Optimizer/ConstantFolder');
 module.exports.ValueNumber = require('./Optimizer/ValueNumber');
 module.exports.CopyPropagation = require('./Optimizer/CopyPropagation');
+module.exports.ConstantPropagation = require('./Optimizer/ConstantPropagation');
 /*=====  End of Optimizer  ======*/
 
 
@@ -50,5 +52,10 @@ module.exports.X86CodeGenerator = require('./Generator/X86CodeGenerator');
 =================================*/
 module.exports.IRFlattener = require('./Transformer/IRFlattener');
 module.exports.BasicBlockBuilder = require('./Transformer/BasicBlockBuilder');
-/*=====  End of Generator  ======*/
+/*=====  End of Transformer  ======*/
 
+/*=================================
+=            Collector          =
+=================================*/
+module.exports.VariableCollector = require('./Collector/VariableCollector');
+/*=====  End of Collector  ======*/
