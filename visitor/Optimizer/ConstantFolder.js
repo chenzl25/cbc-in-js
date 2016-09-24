@@ -58,6 +58,17 @@ $import(ConstantFolder.prototype, {
   visitUni: function(node) {
     var fold = this.visit(node.expr());
     if (fold) node._expr = fold;
+    if (node.expr() instanceof Int) {
+      var type = node.type();
+      var lv = node.expr().value();
+      switch (node.op()) {
+        case Op.UMINUS: return new Int(type, -lv);
+        case Op.BIT_NOT: return new Int(type, ~lv);
+        case Op.NOT: return new Int(type, lv>0?-1:1);
+        default:
+          throw new Error("unknown unary op: " + op);
+      }
+    }
   },
 
   visitBin: function(node) {
