@@ -31,28 +31,29 @@ $import(IRFlattener.prototype, {
   /*================================
   =            override            =
   ================================*/
-  visit: function(node, inBin) {
+  visit: function(node, inBin, inUni) {
     if (inBin !== true) inBin = false;
-    if (node instanceof ir.ExprStmt) return this.visitExprStmt(node, inBin);
-    else if (node instanceof ir.Assign) return this.visitAssign(node, inBin);
-    else if (node instanceof ir.CJump) return this.visitCJump(node, inBin);
-    else if (node instanceof ir.Jump) return this.visitJump(node, inBin);
-    else if (node instanceof ir.Switch) return this.visitSwitch(node, inBin);
-    else if (node instanceof ir.LabelStmt) return this.visitLabelStmt(node, inBin);
-    else if (node instanceof ir.Return) return this.visitReturn(node, inBin);
-    else if (node instanceof ir.Uni) return this.visitUni(node, inBin);
-    else if (node instanceof ir.Bin) return this.visitBin(node, inBin);
-    else if (node instanceof ir.Call) return this.visitCall(node, inBin);
-    else if (node instanceof ir.Addr) return this.visitAddr(node, inBin);
-    else if (node instanceof ir.Mem) return this.visitMem(node, inBin);
-    else if (node instanceof ir.Var) return this.visitVar(node, inBin);
-    else if (node instanceof ir.Case) return this.visitCase(node, inBin);
-    else if (node instanceof ir.Int) return this.visitInt(node, inBin);
-    else if (node instanceof ir.Str) return this.visitStr(node, inBin);
-    else if (node instanceof ir.Move) return this.visitMove(node, inBin);
-    else if (node instanceof ir.Load) return this.visitLoad(node, inBin);
-    else if (node instanceof ir.Store) return this.visitStore(node, inBin);
-    else if (node instanceof ir.Reg) return this.visitReg(node, inBin);
+    if (inUni !== true) inUni = false;
+    if (node instanceof ir.ExprStmt) return this.visitExprStmt(node, inBin, inUni);
+    else if (node instanceof ir.Assign) return this.visitAssign(node, inBin, inUni);
+    else if (node instanceof ir.CJump) return this.visitCJump(node, inBin, inUni);
+    else if (node instanceof ir.Jump) return this.visitJump(node, inBin, inUni);
+    else if (node instanceof ir.Switch) return this.visitSwitch(node, inBin, inUni);
+    else if (node instanceof ir.LabelStmt) return this.visitLabelStmt(node, inBin, inUni);
+    else if (node instanceof ir.Return) return this.visitReturn(node, inBin, inUni);
+    else if (node instanceof ir.Uni) return this.visitUni(node, inBin, inUni);
+    else if (node instanceof ir.Bin) return this.visitBin(node, inBin, inUni);
+    else if (node instanceof ir.Call) return this.visitCall(node, inBin, inUni);
+    else if (node instanceof ir.Addr) return this.visitAddr(node, inBin, inUni);
+    else if (node instanceof ir.Mem) return this.visitMem(node, inBin, inUni);
+    else if (node instanceof ir.Var) return this.visitVar(node, inBin, inUni);
+    else if (node instanceof ir.Case) return this.visitCase(node, inBin, inUni);
+    else if (node instanceof ir.Int) return this.visitInt(node, inBin, inUni);
+    else if (node instanceof ir.Str) return this.visitStr(node, inBin, inUni);
+    else if (node instanceof ir.Move) return this.visitMove(node, inBin, inUni);
+    else if (node instanceof ir.Load) return this.visitLoad(node, inBin, inUni);
+    else if (node instanceof ir.Store) return this.visitStore(node, inBin, inUni);
+    else if (node instanceof ir.Reg) return this.visitReg(node, inBin, inUni);
     else throw new Error(IRVisitor.errorMsg);
   },
 
@@ -98,11 +99,16 @@ $import(IRFlattener.prototype, {
   // Expr
   //
   
-  visitUni: function(node) {
-    node._expr = this.visit(node.expr());
-    var tmp  = ir.Reg.tmp();
-    this._stmts.push(new ir.Move(null, node, tmp));
-    return tmp;
+  visitUni: function(node, inBin, inUni) {
+    if (inUni) {
+      node._expr = this.visit(node.expr(), inBin, inUni);
+      var tmp  = ir.Reg.tmp();
+      this._stmts.push(new ir.Move(null, node, tmp));
+      return tmp;
+    } else {
+      node._expr = this.visit(node.expr(), inBin, true);
+      return node;      
+    }
   },
 
   visitBin: function(node, inBin) {

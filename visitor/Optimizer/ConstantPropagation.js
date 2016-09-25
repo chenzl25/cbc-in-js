@@ -148,7 +148,8 @@ ConstantPropagation.prototype = {
               curValue = this.evalBin(inst.from().op(), lv, rv);
             }
             blockIn.set(inst.to().name(), this.calLattice(blockIn.get(inst.to().name()), curValue));
-          } else if (inst.from() instanceof ir.Uni) {
+          } else if (inst.from() instanceof ir.Uni &&
+                     typeof blockIn.get(inst.from().expr().name()) === 'number') {
             var curValue;
             var lv = blockIn.get(inst.from().expr().name());
             curValue = this.evalUni(inst.from().op(), lv);
