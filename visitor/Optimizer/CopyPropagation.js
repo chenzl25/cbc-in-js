@@ -1,6 +1,6 @@
 var $extend = require('../../util/extend');
 var $import = require('../../util/import');
-var setOp = require('../../util/setOP');
+var SetOp = require('../../util/SetOp');
 var ir = require('../../ir/index');
 module.exports = CopyPropagation;
 
@@ -97,7 +97,7 @@ CopyPropagation.prototype = {
     var workList = [];
     var inList = new Set;
     for (var tmpSet of COPY.values()) {
-      U = setOp.union(U, tmpSet);
+      U = SetOp.union(U, tmpSet);
     }
     for (var i = 0; i < bbs._bbs.length; i++) {
       if (bbs.isEntryIndex(i)) {
@@ -121,18 +121,18 @@ CopyPropagation.prototype = {
         if (curIn === null) {
           curIn = CPout.get(i);
         } else {
-          curIn = setOp.interset(curIn, CPout.get(i));
+          curIn = SetOp.interset(curIn, CPout.get(i));
         }
       }
-      if (!setOp.equal(curIn, CPin.get(cur))) {
+      if (!SetOp.equal(curIn, CPin.get(cur))) {
         change = true;
         CPin.set(cur, curIn);
       }
 
 
-      curOut = setOp.union(COPY.get(cur), 
-                           setOp.minus(CPin.get(cur), KILL.get(cur)));
-      if (!setOp.equal(curOut, CPout.get(cur))) {
+      curOut = SetOp.union(COPY.get(cur), 
+                           SetOp.minus(CPin.get(cur), KILL.get(cur)));
+      if (!SetOp.equal(curOut, CPout.get(cur))) {
           change = true;
           CPout.set(cur, curOut);
       }

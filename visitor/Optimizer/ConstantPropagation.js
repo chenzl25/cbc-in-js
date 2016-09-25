@@ -1,6 +1,6 @@
 var $extend = require('../../util/extend');
 var $import = require('../../util/import');
-var setOp = require('../../util/setOP');
+var SetOp = require('../../util/SetOp');
 var Op = require('../../ir/Op');
 var ir = require('../../ir/index');
 var INT32 = require('../../asm/Type').INT32;
@@ -76,7 +76,7 @@ ConstantPropagation.prototype = {
     var U = new Set;
     for (var i = 0; i < bbs._bbs.length; i++) {
       var tmpSet = (new VariableCollector()).collect(bbs._bbs[i]);
-      U = setOp.union(U, tmpSet);
+      U = SetOp.union(U, tmpSet);
     }
     return U;
   },
