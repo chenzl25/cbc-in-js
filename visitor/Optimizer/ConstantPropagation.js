@@ -8,7 +8,6 @@ var VariableCollector = require('../../visitor/Collector/VariableCollector');
 module.exports = ConstantPropagation;
 
 function ConstantPropagation() {
-  this._ACP = new Set; // {Reg -> Reg}
   this._top = 'top';
   this._down = 'down';
 }
@@ -148,12 +147,12 @@ ConstantPropagation.prototype = {
             } else if (typeof lv === 'number' || typeof rv === 'number') {
               curValue = this.evalBin(inst.from().op(), lv, rv);
             }
-            blockIn.set(i, this.calLattice(blockIn.get(i), curValue));
+            blockIn.set(inst.to().name(), this.calLattice(blockIn.get(inst.to().name()), curValue));
           } else if (inst.from() instanceof ir.Uni) {
             var curValue;
             var lv = blockIn.get(inst.from().expr().name());
             curValue = this.evalUni(inst.from().op(), lv);
-            blockIn.set(i, this.calLattice(blockIn.get(i), curValue));
+            blockIn.set(inst.to().name(), this.calLattice(blockIn.get(inst.to().name()), curValue));
           } else if (inst.from() instanceof ir.Reg) {
             blockIn.set(inst.to().name(), blockIn.get(inst.from().name()));
           } else {
@@ -204,7 +203,7 @@ ConstantPropagation.prototype = {
     }
   },
 
-  evalUni: function(op, l) {
+  evalUni: function(op, lv) {
     switch (op) {
       case Op.UMINUS: return -lv;
       case Op.BIT_NOT: return ~lv;

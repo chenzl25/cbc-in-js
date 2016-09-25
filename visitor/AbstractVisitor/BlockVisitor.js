@@ -29,7 +29,7 @@ BlockVisitor.prototype = {
       this.visitUnit(inst.from().left());
       this.visitUnit(inst.from().right());
     } else if (inst.from() instanceof ir.Uni) {
-      this.visitUnit(inst.from().right());
+      this.visitUnit(inst.from().expr());
     } else this.visitUnit(inst.from());
     this.visitUnit(inst.to());
   },
