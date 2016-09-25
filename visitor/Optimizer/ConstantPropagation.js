@@ -5,6 +5,7 @@ var Op = require('../../ir/Op');
 var ir = require('../../ir/index');
 var INT32 = require('../../asm/Type').INT32;
 var VariableCollector = require('../../visitor/Collector/VariableCollector');
+var PointerRelated = require('../../visitor/Collector/PointerRelated');
 module.exports = ConstantPropagation;
 
 function ConstantPropagation() {
@@ -14,6 +15,9 @@ function ConstantPropagation() {
 
 ConstantPropagation.prototype = {
   optimize: function(ir) {
+    if ((new PointerRelated()).collect(ir)) {
+      return;
+    }
     this.cpDefinedFunctions(ir.definedFunctions());
   },
 
@@ -96,12 +100,16 @@ ConstantPropagation.prototype = {
     return result;
   },
 
-  calLattice: function(a, b) {
+  calLattice: function(a, b, op) {
     if (a === this._down || b === this._down) {
       return this._down;
     } else if (typeof a === 'number' && typeof b === 'number') {
-      if (a === b) return a;
-      else return this._down;
+      if (op) {
+        return this.evalBin(op, a, b);
+      } else {
+        if (a === b) return a;
+        else return this._down;
+      }
     } else if (a === this._top) {
       return b;
     } else if (b === this._top) {
@@ -142,11 +150,7 @@ ConstantPropagation.prototype = {
             var curValue;
             var lv = blockIn.get(inst.from().left().name());
             var rv = blockIn.get(inst.from().right().name());
-            if (lv === this._down || rv === this._down) {
-              curValue = this._down;
-            } else if (typeof lv === 'number' || typeof rv === 'number') {
-              curValue = this.evalBin(inst.from().op(), lv, rv);
-            }
+            curValue = this.calLattice(lv, rv, inst.from().op()); // Bin Version Lattice
             blockIn.set(inst.to().name(), this.calLattice(blockIn.get(inst.to().name()), curValue));
           } else if (inst.from() instanceof ir.Uni &&
                      typeof blockIn.get(inst.from().expr().name()) === 'number') {

@@ -1,6 +1,7 @@
 var $extend = require('../../util/extend');
 var $import = require('../../util/import');
 var ir = require('../../ir/index');
+var PointerRelated = require('../../visitor/Collector/PointerRelated');
 module.exports = ValueNumber;
 
 function ValueNumber() {
@@ -9,6 +10,9 @@ function ValueNumber() {
 
 ValueNumber.prototype = {
   optimize: function(ir) {
+    if ((new PointerRelated()).collect(ir)) {
+      return;
+    }
     this.numberDefinedFunctions(ir.definedFunctions());
   },
 

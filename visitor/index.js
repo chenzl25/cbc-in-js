@@ -37,6 +37,7 @@ module.exports.ConstantFolder = require('./Optimizer/ConstantFolder');
 module.exports.ValueNumber = require('./Optimizer/ValueNumber');
 module.exports.CopyPropagation = require('./Optimizer/CopyPropagation');
 module.exports.ConstantPropagation = require('./Optimizer/ConstantPropagation');
+module.exports.CommonSubExpression = require('./Optimizer/CommonSubExpression');
 /*=====  End of Optimizer  ======*/
 
 
@@ -58,4 +59,5 @@ module.exports.BasicBlockBuilder = require('./Transformer/BasicBlockBuilder');
 =            Collector          =
 =================================*/
 module.exports.VariableCollector = require('./Collector/VariableCollector');
+module.exports.PointerRelated = require('./Collector/PointerRelated');
 /*=====  End of Collector  ======*/

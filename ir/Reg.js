@@ -12,9 +12,9 @@ function Reg(name) {
 };
 
 Reg.seq = 0;
-Reg.name = 'r';
-Reg.tmp = function() {
-  return new Reg(Reg.name + Reg.seq++);
+Reg.prefix = '$r';
+Reg.tmp = function tmp() {
+  return new Reg(Reg.prefix + Reg.seq++);
 }
 
 $import(Reg.prototype, {

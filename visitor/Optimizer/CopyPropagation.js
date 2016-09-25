@@ -2,6 +2,7 @@ var $extend = require('../../util/extend');
 var $import = require('../../util/import');
 var SetOp = require('../../util/SetOp');
 var ir = require('../../ir/index');
+var PointerRelated = require('../../visitor/Collector/PointerRelated');
 module.exports = CopyPropagation;
 
 function CopyPropagation() {
@@ -10,6 +11,9 @@ function CopyPropagation() {
 
 CopyPropagation.prototype = {
   optimize: function(ir) {
+    if ((new PointerRelated()).collect(ir)) {
+      return;
+    }
     this.cpDefinedFunctions(ir.definedFunctions());
   },
 
