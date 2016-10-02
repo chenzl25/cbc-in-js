@@ -1,11 +1,15 @@
-int globalCommonSubExpression(void) {
-  // int a, b, c, d;
-  // b = a + 2;
-  // c = 4 * b;
-  // if (b >= c) {
-  //   b = 1;
-  // }
-  // d = a + 2;
+int globalCommonSubExpression_1(void) {
+  int a, b, c, d;
+  b = a + 2;
+  c = 4 * b;
+  if (b >= c) {
+    b = 1;
+  }
+  d = a + 2;
+  d = 4 * b;
+}
+
+int globalCommonSubExpression_2(void) {
   int a, b, c, d, e, i, extra;
   c = a + b;
   d = a * c;
@@ -23,19 +27,19 @@ int globalCommonSubExpression(void) {
   } while (i > 10);
 }
 
-// int localCommonSubExpression(void) {
-//   int a, b, c, d, e, f, g, h, j, k, m, n;
-//   c = a + b;
-//   d = m & n;
-//   e = b + d;
-//   f = a + b;
-//   g = -b;
-//   h = b + a;
-//   a = j + a;
-//   k = m & n;
-//   j = b + d;
-//   a = -b;
-//   if (m & n) {
+int localCommonSubExpression(void) {
+  int a, b, c, d, e, f, g, h, j, k, m, n;
+  c = a + b;
+  d = m & n;
+  e = b + d;
+  f = a + b;
+  g = -b;
+  h = b + a;
+  a = j + a;
+  k = m & n;
+  j = b + d;
+  a = -b;
+  if (m & n) {
 
-//   }
-// }
+  }
+}
