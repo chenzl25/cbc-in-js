@@ -177,6 +177,7 @@ $import(IRGenerator.prototype, {
       this.cjump(node.location(), cond, thenLabel, endLabel);
       this.label(thenLabel);
       this.visit(node.thenBody());
+      this.jump(endLabel);
       this.label(endLabel);
     } else {
       this.cjump(node.location(), cond, thenLabel, elseLabel);
