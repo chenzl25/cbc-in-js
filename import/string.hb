@@ -20,3 +20,5 @@ extern char* strerror_r(int errnum, char* buf, size_t len);
 extern void* memcpy(void* dest, void* src, size_t len);
 extern void* memccpy(void* dest, void* src, int c, size_t len);
 extern void* memmove(void* dest, void* src, size_t len);
+extern int memcmp (void* ptr1, void* ptr2, size_t num);
+extern void* memset (void * ptr, int value, size_t num );

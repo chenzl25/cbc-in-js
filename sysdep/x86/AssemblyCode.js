@@ -407,7 +407,8 @@ AssemblyCode.prototype = {
 };
 
 
-function VirtualStack() {
+function VirtualStack(naturalType) {
+  this._naturalType = naturalType;
   this._offset = 0;
   this._max = 0;
   this._memrefs = []; // IndirectMemoryReference[]
@@ -445,7 +446,7 @@ VirtualStack.prototype = {
   },
 
   bp: function() {
-    return new Register(RegisterClass.BP, this.naturalType);
+    return new Register(RegisterClass.BP, this._naturalType);
   },
 
   fixOffset: function(diff) {

@@ -6,6 +6,7 @@ module.exports = Register;
 
 $extend(Register, asm.Register);
 function Register(_class, type) {
+  if (type == undefined) throw new Error('!!')
   // RegisterClass _class, asm.Type type
   this._class = _class;
   this._type = type;
@@ -50,7 +51,7 @@ $import(Register.prototype, {
     case asm.Type.INT32: return "e" + this.baseName();
     case asm.Type.INT64: return "r" + this.baseName();
     default:
-      throw new Error("unknown register Type: " + type);
+      throw new Error("unknown register Type: " + this._type);
     }
   },
 
@@ -62,7 +63,7 @@ $import(Register.prototype, {
       case RegisterClass.DX:
         return this.baseName().substr(0, 1) + "l";
       default:
-        throw new Error("does not have lower-byte register: " + _class);
+        throw new Error("does not have lower-byte register: " + this._class);
       }
   }
   

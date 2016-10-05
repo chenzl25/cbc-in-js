@@ -84,6 +84,7 @@ Lexer.prototype = {
       this.incCursor(mm[0].length)
       if (token.type === "lineComment") this.incLineNo();
       else this.incColNo(mm[0].length);
+      if (token.type === 'character') token.value = this.iternChar(token.value);
       return token;
     } else {
       ErrorHandler.error("token error",
@@ -147,7 +148,8 @@ Lexer.prototype = {
 
 
       self.patternMatch("identifier", /([a-zA-Z_][a-zA-Z0-9_]*)/);
-      self.patternMatch("character", /(\'[\w\s]\')/);
+      self.patternMatch("character", /(\'[^\'\\]\')/);
+      self.patternMatch("character", /(\'\\(n|t|b|\'|\\)\')/); // see iternChar
       self.patternMatch("number", /([0-9]+U?L?)/); //only interger
       self.patternMatch("number", /(0[xX][0-9a-fA-F]+U?L?)/);
       self.patternMatch("lineComment", /(\/\/.*)\n/);
@@ -189,6 +191,21 @@ Lexer.prototype = {
       }
     }
     return result;
+  },
+  
+  iternChar: function(ch) {
+    if (ch[1] != '\\') return ch;
+    // ch = '\\n' => '\n'
+    switch (ch[2]) {
+      case 'n':  return '\'\n\'';
+      case 't':  return '\'\t\'';
+      case 'b':  return '\'\b\'';
+      case '\'': return '\'\'\'';
+      case '\\': return '\'\\\'';
+      default:
+        throw new Error('unconsistent escape char')
+    }
+
   },
 
   incLineNo: function () {
