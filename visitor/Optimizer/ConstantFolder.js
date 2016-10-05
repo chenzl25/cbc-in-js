@@ -65,8 +65,10 @@ $import(ConstantFolder.prototype, {
         case Op.UMINUS: return new Int(type, -lv);
         case Op.BIT_NOT: return new Int(type, ~lv);
         case Op.NOT: return new Int(type, lv>0?-1:1);
+        case Op.S_CAST: return;
+        case Op.U_CAST: return;
         default:
-          throw new Error("unknown unary op: " + op);
+          throw new Error("unknown unary op: " + node.op());
       }
     }
   },

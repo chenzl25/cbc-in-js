@@ -651,7 +651,7 @@ $import(X86CodeGenerator.prototype, {
       this._as.virtualPush(this.ax());
       this.compile(node.lhs());
       this._as.mov(this.ax(), this.cx());
-      this._as.virtualPop(ax());
+      this._as.virtualPop(this.ax());
       this.store(this.ax(node.lhs().type()), this.mem(this.cx()));
     }
   },
