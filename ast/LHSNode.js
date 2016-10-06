@@ -23,7 +23,7 @@ $import(LHSNode.prototype, {
   },
 
   allocSize: function() {
-    this.origType().allocSize();
+    return this.origType().allocSize();
   },
 
   isLvalue: function() { 
