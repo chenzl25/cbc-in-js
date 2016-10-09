@@ -1,0 +1,19 @@
+int main(void) {
+	int a, b, c, i;
+	a = 1; // 1st Block
+	if (a > 1) {
+		a = 1;
+	}
+	if (a < 1) {
+		while (i < 10) {
+			i = i + 1;
+		}
+		TAR1: a = 2;
+	} else {
+		if (b == 0) {
+			goto TAR1;
+		}
+		b = 1;
+	}
+	a = 3;
+}

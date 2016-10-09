@@ -17,6 +17,7 @@ function BBS() {
   this._allDoms = new Map();  // Number -> {Number}
   this._addIDoms = new Map(); // Number -> Number
   this._labelMap = new Map(); // String -> Number
+  this._naturalLoop = new Map() // Number -> {Number}   // header -> loop
   this._entryBlock = new BasicBlock();
   this._exitBlock = new BasicBlock();
   this._bbs.push(this._entryBlock); // extra block
@@ -45,9 +46,10 @@ BBS.prototype = {
     this.resolveSuccAndPred();
     this.removeIsolatedBlock();
     this.compactBlock();
-    // this._allEbbs  = this.buildAllEbbs();
-    // this._allDoms  = this.buildAllDoms();
-    // this._addIDoms = this.buildAllIDoms();
+    this._allEbbs  = this.buildAllEbbs();
+    this._allDoms  = this.buildAllDoms();
+    this._addIDoms = this.buildAllIDoms();
+    this._naturalLoop = this.buildNaturalLoop();
   },
 
   resolveLabelMap: function() {
@@ -466,6 +468,78 @@ BBS.prototype = {
       }
     }
     return allIDoms;
+  },
+
+  buildNaturalLoop: function() {
+    // String := 'from,to' -> type := tree | back | forward | cross | null
+    var allEdges = this.getAllEdges();     
+    var treeEdges = new Set;    // {<from, to>}
+    var backEdges = new Set;    // {<from, to>} 
+    var forwardEdges = new Set; // {<from, to>}
+    var crossEdges = new Set;   // {<from, to>}
+    this.markallEdgesType(allEdges);
+    console.log(allEdges);
+  },
+
+  markallEdgesType: function(allEdges) {
+    var visit = [];// [Number]
+    var pre = [];  // [Number] 
+    var post = []; // [Number]
+    var len = this.blocks().length
+    for (var i = 0; i < len; i++) {
+      pre.push(0);
+      post.push(0);
+      visit.push(false);
+    }
+    pre.index = 1;
+    post.index = 1;
+    this._markallEdgesType(allEdges, visit, pre, post, this.entryIndex());
+    // console.log(allEdges);
+  },
+
+  _markallEdgesType: function(allEdges, visit, pre, post, from) {
+    visit[from] = true;
+    pre[from] = pre.index++;
+    for (var to of this.succ(from)) {
+      if (!visit[to]) {
+        this._markallEdgesType(allEdges, visit, pre, post, to);
+        allEdges.set(this.encodeAllEdgesKey(from, to), 'tree');
+      } else if (pre[from] < pre[to]) {
+        allEdges.set(this.encodeAllEdgesKey(from, to), 'forward');
+      } else if (post[to] === 0) { // to hasn't been visit now , when post[y] equal 0
+        allEdges.set(this.encodeAllEdgesKey(from, to), 'back');
+      } else {
+        allEdges.set(this.encodeAllEdgesKey(from, to), 'cross');
+      }
+    }
+    post[from] = post.index++;
+  },
+
+  getAllEdges: function() {
+    // String := 'from,to' -> type := tree | back | forward | cross | null
+    var allEdges = new Map;
+    var succMap = this._succ;
+    for (var from of succMap.keys()) {
+      var toSet = succMap.get(from);
+      for (var to of toSet) {
+        allEdges.set(this.encodeAllEdgesKey(from, to), null);
+      }
+    }
+    return allEdges;
+  },
+
+  encodeAllEdgesKey: function(from, to) {
+    return from + ',' + to;
+  },
+
+  decodeAllEdgesKey: function(key) {
+    var commaIndex = key.indexOf(',');
+    if (commaIndex === -1) {
+      throw new Error('parseAllEdgesKey Error!');
+    }
+    var from = parseInt(key.slice(0, commaIndex));
+    var to = parseInt(key.slice(commaIndex+1, key.length));
+    return {from: from, to: to};
   },
 
   wholeIndexSet: function() {
