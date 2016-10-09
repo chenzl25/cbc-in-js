@@ -1,4 +1,4 @@
-int main(void) {
+int testMarkallEdgesType(void) {
 	int a, b, c, i;
 	a = 1; // 1st Block
 	if (a > 1) {
@@ -16,4 +16,40 @@ int main(void) {
 		b = 1;
 	}
 	a = 3;
+}
+
+int testNatLoop1(void) {
+	int a, b, i;
+	if (a == 1) {
+		T1: goto T2;
+	} else {
+		T2: goto T1;
+	}
+}
+
+int testNatLoop2(void) {
+	int a, b, i, j;
+	do {
+		i++;
+	} while(i > 1);
+	while(i < 1) {
+		a++;
+	}
+	for (a = 1; i < 10; i++) {
+		for (b = 1; j < 10; j++) {
+			a = 2;
+		}
+	}
+}
+
+int testPreheader(void) {
+	int a, b, i, j;
+	AA:
+	a = 1;
+
+	if (a == 2) {
+		goto AA;
+	} else if (a == 3) {
+		goto AA;
+	}
 }

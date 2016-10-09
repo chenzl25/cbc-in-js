@@ -1,5 +1,7 @@
 var $extend = require('../util/extend');
 var $import = require('../util/import');
+var ir = require('../ir');
+var asm = require('../asm');
 module.exports = BasicBlock;
 
 function BasicBlock() {
@@ -13,6 +15,35 @@ BasicBlock.prototype = {
 
   inst: function(i) {
     return this._insts[i];
+  },
+
+  label: function(i) {
+    return this.inst(0).label();
+  },
+
+  labelName: function(i) {
+    return this.inst(0).label().toString();
+  },
+
+  changeJumpLabel: function(originLabelName, newLabelName) {
+    var lastInst = this.inst(this.length() - 1);
+    if (lastInst instanceof ir.Jump) {
+      if (originLabelName == lastInst.label().toString()) {
+        lastInst.label()._symbol = new asm.NamedSymbol(newLabelName);
+      } else {
+        throw new Error('changeJumpLabel Jump label error');
+      }
+    } else if (lastInst instanceof ir.CJump) {
+      if (originLabelName == lastInst.thenLabel().toString()) {
+        lastInst.thenLabel()._symbol = new asm.NamedSymbol(newLabelName);
+      } else if (originLabelName == lastInst.elseLabel().toString()) {
+        lastInst.elseLabel()._symbol = new asm.NamedSymbol(newLabelName);
+      } else {
+         throw new Error('changeJumpLabel CJump label error');
+      }
+    } else {
+      throw new Error('changeJumpLabel impossile case');
+    }
   },
 
   length: function() {

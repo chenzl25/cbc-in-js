@@ -2,6 +2,8 @@ var $extend = require('../util/extend');
 var $import = require('../util/import');
 var SetOp   = require('../util/SetOp');
 var BasicBlock = require('./BasicBlock');
+var NamedSymbol = require('../asm/NamedSymbol');
+var Label = require('../asm/Label');
 var LabelStmt = require('../ir/LabelStmt');
 var Jump = require('../ir/Jump');
 var CJump = require('../ir/CJump');
@@ -11,13 +13,14 @@ module.exports = BBS;
 
 function BBS() {
   this._bbs = []; // BasicBlock[]
-  this._succ = new Map(); // Number -> {Number}
-  this._pred = new Map(); // Number -> {Number}
-  this._allEbbs = new Map();  // Number -> {Number}
-  this._allDoms = new Map();  // Number -> {Number}
-  this._addIDoms = new Map(); // Number -> Number
-  this._labelMap = new Map(); // String -> Number
-  this._naturalLoop = new Map() // Number -> {Number}   // header -> loop
+  this._succ = new Map; // Number -> {Number}
+  this._pred = new Map; // Number -> {Number}
+  this._allEbbs = new Map;  // Number -> {Number}
+  this._allDoms = new Map;  // Number -> {Number}
+  this._allIDoms = new Map; // Number -> Number
+  this._labelMap = new Map; // String -> Number
+  this._naturalLoop = new Map // String:'from,to' -> {Number}   // backEdge -> loop
+  this._preheader = new Map; // Number -> Number
   this._entryBlock = new BasicBlock();
   this._exitBlock = new BasicBlock();
   this._bbs.push(this._entryBlock); // extra block
@@ -48,7 +51,7 @@ BBS.prototype = {
     this.compactBlock();
     this._allEbbs  = this.buildAllEbbs();
     this._allDoms  = this.buildAllDoms();
-    this._addIDoms = this.buildAllIDoms();
+    this._allIDoms = this.buildAllIDoms();
     this._naturalLoop = this.buildNaturalLoop();
   },
 
@@ -143,7 +146,7 @@ BBS.prototype = {
     }
   },
 
-  // i -> j | i   j
+  // TODO: should change the Jump or CJump label
   insertBlock: function(i, j, block) {
     this._bbs.push(block);
     var blockIndex = this._bbs.length;
@@ -230,6 +233,10 @@ BBS.prototype = {
     // reverse because deleteBlock will move the this._bbs
     for (var i = visit.length-1; i >= 0 ; i--) {
       if (!visit[i]) {
+        if (i === this.exitIndex()) {
+          console.log('[WARN!]: exitBlock has been removeed for being isolated, ' + 
+                      'which indicates this program in a dead loop');
+        }
         this.deleteBlock(i);
       }
     }
@@ -441,7 +448,7 @@ BBS.prototype = {
     var tmpSet;
     // init
     for (var i = 0; i < this._bbs.length; i++) {
-      tmpSet = this._allDoms.get(i);
+      tmpSet = SetOp.cloneSet(this._allDoms.get(i));
       tmpSet.delete(i);
       tmpMap.set(i, tmpSet);
     }
@@ -471,14 +478,93 @@ BBS.prototype = {
   },
 
   buildNaturalLoop: function() {
+    var naturalLoop = new Map;
     // String := 'from,to' -> type := tree | back | forward | cross | null
     var allEdges = this.getAllEdges();     
-    var treeEdges = new Set;    // {<from, to>}
     var backEdges = new Set;    // {<from, to>} 
-    var forwardEdges = new Set; // {<from, to>}
-    var crossEdges = new Set;   // {<from, to>}
+
     this.markallEdgesType(allEdges);
-    console.log(allEdges);
+    for (var key of allEdges.keys()) {
+      if (allEdges.get(key) === 'back') {
+        // find the edges with type 'back' and <to> dominates <from>
+        var tmp = this.decodeEdgeKey(key);
+        var from = tmp.from;
+        var to = tmp.to;
+        if (this._allDoms.get(from).has(to)) {
+          backEdges.add({from: from, to: to});
+        }
+      }
+    }
+    
+    var collapsedBackEdge = new Map;   // Number -> {Number}
+    for (var backEdge of backEdges) {
+      if (!collapsedBackEdge.has(backEdge.to)) {
+        collapsedBackEdge.set(backEdge.to, (new Set).add(backEdge.from));
+      } else {
+        collapsedBackEdge.get(backEdge.to).add(backEdge.from);
+      }
+    }
+    for (var backEdge of backEdges) {
+      naturalLoop.set(this.encodeEdgeKey(backEdge.from, backEdge.to),
+                      this.natLoop(backEdge));
+      var headIndex = backEdge.to;
+      if (this._preheader.get(headIndex) != undefined) {
+        continue;
+      }
+      var originHeadLabelName = this.block(headIndex).labelName();
+      var originHeadPred = SetOp.cloneSet(this.pred(headIndex));
+      var newblock = new BasicBlock();
+      newblock.appendInst(new LabelStmt(null, new Label()));
+      newblock.appendInst(new Jump(null, new Label(new NamedSymbol(originHeadLabelName))));
+      this.blocks().push(newblock);
+      var blockIndex = this.blocks().length-1;
+      this._preheader.set(headIndex, blockIndex);
+      this.addPred(headIndex, blockIndex);
+      this.addSucc(blockIndex, headIndex);
+
+      for (var inIndex of originHeadPred) {
+        if (!collapsedBackEdge.get(headIndex).has(inIndex)) {
+          this.removePred(headIndex, inIndex);
+          this.removeSucc(inIndex, headIndex);
+          this.addSucc(inIndex, blockIndex);
+          this.addPred(blockIndex, inIndex);
+          this.block(inIndex).changeJumpLabel(originHeadLabelName, newblock.labelName());
+        }
+      }
+    }
+    // console.log(this._succ)
+    // console.log(naturalLoop)
+    return naturalLoop;
+  },
+
+  /**
+   *  return the natural loop identified by the backEdge
+   *  return Object // {Number}
+   */
+
+  natLoop: function(backEdge) {
+    var stack = [];
+    var loop = new Set;
+    loop.add(backEdge.from);
+    if (backEdge.from == backEdge.to) {
+      return loop;
+    }
+    loop.add(backEdge.to);
+
+    stack.push(backEdge.from);
+    while (stack.length !== 0) {
+      // add predecessors of <from> that are not predecessors of <to>
+      // to the set of nodes in the loop; since <to> dominates <from>,
+      // this only adds nodes in the loop
+      var cur = stack.pop();
+      for (var p of this.pred(cur)) {
+        if (!loop.has(p)) {
+          loop.add(p);
+          stack.push(p);
+        }
+      }
+    }
+    return loop;
   },
 
   markallEdgesType: function(allEdges) {
@@ -494,7 +580,6 @@ BBS.prototype = {
     pre.index = 1;
     post.index = 1;
     this._markallEdgesType(allEdges, visit, pre, post, this.entryIndex());
-    // console.log(allEdges);
   },
 
   _markallEdgesType: function(allEdges, visit, pre, post, from) {
@@ -503,13 +588,13 @@ BBS.prototype = {
     for (var to of this.succ(from)) {
       if (!visit[to]) {
         this._markallEdgesType(allEdges, visit, pre, post, to);
-        allEdges.set(this.encodeAllEdgesKey(from, to), 'tree');
+        allEdges.set(this.encodeEdgeKey(from, to), 'tree');
       } else if (pre[from] < pre[to]) {
-        allEdges.set(this.encodeAllEdgesKey(from, to), 'forward');
+        allEdges.set(this.encodeEdgeKey(from, to), 'forward');
       } else if (post[to] === 0) { // to hasn't been visit now , when post[y] equal 0
-        allEdges.set(this.encodeAllEdgesKey(from, to), 'back');
+        allEdges.set(this.encodeEdgeKey(from, to), 'back');
       } else {
-        allEdges.set(this.encodeAllEdgesKey(from, to), 'cross');
+        allEdges.set(this.encodeEdgeKey(from, to), 'cross');
       }
     }
     post[from] = post.index++;
@@ -522,17 +607,17 @@ BBS.prototype = {
     for (var from of succMap.keys()) {
       var toSet = succMap.get(from);
       for (var to of toSet) {
-        allEdges.set(this.encodeAllEdgesKey(from, to), null);
+        allEdges.set(this.encodeEdgeKey(from, to), null);
       }
     }
     return allEdges;
   },
 
-  encodeAllEdgesKey: function(from, to) {
+  encodeEdgeKey: function(from, to) {
     return from + ',' + to;
   },
 
-  decodeAllEdgesKey: function(key) {
+  decodeEdgeKey: function(key) {
     var commaIndex = key.indexOf(',');
     if (commaIndex === -1) {
       throw new Error('parseAllEdgesKey Error!');
