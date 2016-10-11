@@ -109,9 +109,9 @@ ASTVisitor.prototype = {
   },
 
   visitForNode: function(node) {
-    this.visit(node.init());
-    this.visit(node.cond());
-    this.visit(node.incr());
+    if (node.init() != undefined) this.visit(node.init());
+    if (node.cond() != undefined) this.visit(node.cond());
+    if (node.incr() != undefined) this.visit(node.incr());
     this.visit(node.body());
     return null;
   },

@@ -261,7 +261,7 @@ $import(IRGenerator.prototype, {
     var contLabel = new Label();
     var endLabel = new Label();
 
-    this.visit(node.init());
+    if (node.init()) this.visit(node.init());
     this.label(begLabel);
     this.cjump(node.location(), this.transformExpr(node.cond()), 
                   bodyLabel, endLabel);
@@ -272,7 +272,7 @@ $import(IRGenerator.prototype, {
     this.popBreak();
     this.popContinue();
     this.label(contLabel);
-    this.visit(node.incr());
+    if (node.incr() != undefined) this.visit(node.incr());
     this.jump(begLabel);
     this.label(endLabel);
     return null;

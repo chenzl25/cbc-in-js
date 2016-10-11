@@ -1,0 +1,10 @@
+import stdio;
+int main(void) {
+	int i = 0;
+	int a;
+	for (;;) {
+		a = i + 1;
+		i++;
+		printf("%d\n", a);
+	}
+}

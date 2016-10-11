@@ -9,3 +9,4 @@ extern void free(void* ptr);
 extern void* realloc(void* ptr, size_t size);
 extern int system(char* command);
 extern int atoi (char * str);
+extern int rand (void);
