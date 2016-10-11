@@ -265,12 +265,14 @@ $import(IRGenerator.prototype, {
     var bodyLabel = new Label();
     var contLabel = new Label();
     var endLabel = new Label();
-
-    this.visit(node.init());
+    if (node.init() != undefined) {
+      this.visit(node.init());
+    }
     this.jump(begLabel);
     this.label(begLabel);
-    this.cjump(node.location(), this.transformExpr(node.cond()), 
-                  bodyLabel, endLabel);
+    this.cjump(node.location(), 
+               this.transformExpr(node.cond()), 
+               bodyLabel, endLabel);
     this.label(bodyLabel);
     this.pushContinue(contLabel);
     this.pushBreak(endLabel);
@@ -279,7 +281,9 @@ $import(IRGenerator.prototype, {
     this.popContinue();
     this.jump(contLabel);
     this.label(contLabel);
-    this.visit(node.incr());
+    if (node.incr() != undefined) {
+      this.visit(node.incr());
+    }
     this.jump(begLabel);
     this.label(endLabel);
     return null;

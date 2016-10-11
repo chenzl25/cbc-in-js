@@ -1,0 +1,9 @@
+int main(void) {
+	int i, a, b;
+	for (;;) {
+		i = i + 2;
+		a = i;
+		i = i + 4;
+		b = i;
+	}
+}
