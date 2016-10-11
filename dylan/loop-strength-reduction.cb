@@ -1,0 +1,11 @@
+int main(void) {
+	int i = 0, a, b, c;
+	for (;;) {
+		// a = 3*i;
+		// b = a / 2;
+		i = i + 2;
+		c = i + 5;
+		b = c /3;
+		// don't write this i = i + 4; twice
+	}
+}

@@ -86,6 +86,7 @@ Compiler.prototype = {
     (new visitor.CopyPropagation()).optimize(ir);
     (new visitor.ConstantPropagation()).optimize(ir);
     (new visitor.CommonSubExpression()).optimize(ir);    
+    // (new visitor.LoopStrengthReduction()).optimize(ir);
   }
 }
 

@@ -20,7 +20,7 @@ function BBS() {
   this._allIDoms = new Map; // Number -> Number
   this._labelMap = new Map; // String -> Number
   this._naturalLoop = new Map // String:'from,to' -> {Number}   // backEdge -> loop
-  this._preheader = new Map; // Number -> Number
+  this._preheader = new Map; // Number -> Number  // header -> preheader
   this._entryBlock = new BasicBlock();
   this._exitBlock = new BasicBlock();
   this._bbs.push(this._entryBlock); // extra block

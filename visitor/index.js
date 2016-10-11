@@ -38,6 +38,7 @@ module.exports.ValueNumber = require('./Optimizer/ValueNumber');
 module.exports.CopyPropagation = require('./Optimizer/CopyPropagation');
 module.exports.ConstantPropagation = require('./Optimizer/ConstantPropagation');
 module.exports.CommonSubExpression = require('./Optimizer/CommonSubExpression');
+module.exports.LoopStrengthReduction = require('./Optimizer/LoopStrengthReduction');
 /*=====  End of Optimizer  ======*/
 
 
