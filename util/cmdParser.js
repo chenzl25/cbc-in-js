@@ -13,7 +13,7 @@ function parse(argv) {
   result.isDumpIR = false;
   result.isDumpASM = false;
   result.genAssembly = false;
-  result.outputPath = '.';
+  result.outputPath = null;
   result.genObject = false;
   result.files = [];
   for (var i = 2; i < argv.length; i++) {
@@ -33,18 +33,22 @@ function parse(argv) {
       case '-S':
         result.genAssembly = true;
         break;
-      case '-o':
-        result.outputPath = argv[++i];
-        break;
       case '-c':
         result.genObject = true;
+        break;
+      case '-o':
+        result.outputPath = argv[++i];
         break;
       case '--help':
         printHelp();
         break;
       default:
         result.files.push(path.resolve(process.cwd(), argv[i]));
+        result.outputPath = './a.out';
     }
+  }
+  if (result.files.length == 0) {
+    printHelp();
   }
   return result;
 }
@@ -57,10 +61,9 @@ function printHelp() {
   str += '  --dump-ast       Dumps AST and quit.\n'
   str += '  --dump-ir        Dumps IR and quit.\n'
   str += '  --dump-asm       Dumps AssemblyCode and quit.\n'
-  str += '  --print-asm      Prints assembly code and quit.\n'
   str += '  -S               Generates an assembly file and quit.\n'
   str += '  -c               Generates an object file and quit.\n'
   str += '  -o PATH          Places output in file PATH.\n'
-  str += '  --help           Prints this message and quit.\n'
+  str += '  --help           Prints this message and quit.'
   console.log(str);
 }

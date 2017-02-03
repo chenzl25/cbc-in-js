@@ -47,30 +47,40 @@ filesResult.forEach(function(obj) {
   }
 
   if (argv.isDumpASM) {
-    // console.log(obj.asm);
     console.log(obj.asm.toSource());
     return;
   }
 
   if (argv.genAssembly || argv.outputPath) {
+    // generate .s file
     fs.writeFileSync(path.resolve(cwd, obj.fileName.replace('.cb', '.s')), 
                      obj.asm.toSource());
     if (argv.genAssembly) return;
   }
 
   if (argv.genObject || argv.outputPath) {
+    // generate .s file
+    fs.writeFileSync(path.resolve(cwd, obj.fileName.replace('.cb', '.s')), 
+                     obj.asm.toSource());
+    // generate .o file
     compiler.platform.assembler()
             .assemble(path.resolve(cwd, obj.fileName.replace('.cb', '.s')),
                       path.resolve(cwd, obj.fileName.replace('.cb', '.o')));
+    // delete .s file
+    fs.unlinkSync(path.resolve(cwd, obj.fileName.replace('.cb', '.s')));
     if(argv.genObject) return;
   }
 });
 
 // link
-if (argv.outputPath != '.') {
+if (argv.outputPath && files.length > 0) {
   var filePaths = files.map(function(file) {
     return path.resolve(cwd, file.options.fileName).replace('.cb', '.o');
-  })
+  });
   compiler.platform.linker().generateExecutable(filePaths ,argv.outputPath);
+  // delete .o files
+  files.map(function(file) {
+    return fs.unlinkSync(path.resolve(cwd, file.options.fileName.replace('.cb', '.o')));
+  });
 }
 
