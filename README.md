@@ -33,3 +33,38 @@ Implement a c-flat compiler(cbc) in javascript.
 - `util`: utility
 - `visitor`: a collection of visitor used by each pass of compiler.
 - `cbc.js`: this project main entry.
+
+## Sample Code
+
+```c
+import stdio;
+import stdlib;
+
+int main(void) {
+	int i = 0, j = 0;
+	int[50] a;
+	int tmp;
+	printf("before sort: \n");
+	for (i = 0; i < 50; i++) {
+		a[i] = rand() % 50;
+		printf("%d, ", a[i]);
+	}
+	printf("\n");
+
+	for (i = 0; i < 50; i++) {
+		for (j = i + 1; j < 50; j++) {
+			if (a[i] > a[j]) {
+				tmp = a[i];
+				a[i] = a[j];
+				a[j] = tmp;
+			}
+		}
+	}
+	printf("after sort: \n");
+	for (i = 0; i < 50; i++) {
+		printf("%d, ", a[i]);
+	}
+	printf("\n");
+}
+```
+
