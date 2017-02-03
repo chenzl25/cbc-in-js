@@ -44,8 +44,16 @@ function parse(argv) {
         break;
       default:
         result.files.push(path.resolve(process.cwd(), argv[i]));
-        result.outputPath = './a.out';
     }
+  }
+  if (result.isDumpTokens === false &&
+      result.isDumpASM === false &&
+      result.isDumpAST === false &&
+      result.isDumpIR === false &&
+      result.genAssembly === false &&
+      result.genObject === false && 
+      result.outputPath === null) {
+    result.outputPath = './a.out';
   }
   if (result.files.length == 0) {
     printHelp();
