@@ -6,7 +6,6 @@ var printer = new ASTPrinter();
 var files = fs.readdirSync('./test');
 
 files = files.filter(function(fileName) {
-  // if (fileName !== "hello.cb") return false;
   if (fileName.slice(-3) === '.cb') {
     return true;
   }
